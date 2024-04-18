@@ -1,0 +1,62 @@
+.game-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    flex-direction: column;
+}
+
+.game-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    padding-bottom: 20px;
+}
+  
+.game-button-gom {
+    width: 60px;
+    height: 25px;
+    background-color: #454ba1;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.game-button-tic {
+    width: 60px;
+    height: 25px;
+    background-color: #4cc456;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    transition: background-color 0.3s ease-in-out;
+}
+  
+.game-button-ball-left {
+    position: absolute;
+    width: 23px;
+    height: 23px;
+    background-color: #f4f4f4;
+    border-radius: 100%;
+    left: 1px;
+    right: auto;
+    transition: all 0.3s ease-in-out;
+}
+
+.game-button-ball-right {
+    position: absolute;
+    width: 23px;
+    height: 23px;
+    background-color: #f4f4f4;
+    border-radius: 100%;
+    left: 36px;
+    right: auto;
+    transition: all 0.3s ease-in-out;
+}

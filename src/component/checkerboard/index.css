@@ -1,0 +1,57 @@
+.checkerboard-row {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+}
+
+.checkerboard-col {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.checkerboard-chess-container {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    height: 448px;
+}
+
+.checkerboard-container {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    position: relative;
+    left: 79px
+}
+
+.checkerboard-chess-no-one-win {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.record-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: rgb(202, 202, 202);
+    padding: 10px;
+    width: 150px;
+    height: 448px;
+    overflow-y: auto;
+}
+
+.record-button {
+    width: 100%;
+}
+
+.checkerboard-chess-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 10px;
+}
