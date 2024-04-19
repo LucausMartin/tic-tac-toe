@@ -41,11 +41,11 @@ export enum GameName {
     /**
      * 井字棋
      */
-    TICTACTOE = '井字棋',
+    TICTACTOE = 'tictactoe',
     /**
      * 五子棋
      */
-    GOMOKU = '五子棋',
+    GOMOKU = 'gomoku',
 
 }
 

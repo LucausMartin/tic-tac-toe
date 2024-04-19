@@ -46,6 +46,7 @@
 
 .record-button {
     width: 100%;
+    cursor: pointer;
 }
 
 .checkerboard-chess-info {

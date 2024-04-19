@@ -54,6 +54,12 @@ const getmaxWinLength = (direction: [number, number], checkerboardArr: AllGameCh
     let count = 0;
     for (let item = -winLength + 1; item < winLength; item++) {
         const [row, col] = location;
+        if (row + (item * direction[0]) < 0 || row + (item * direction[0]) >= checkerboardArr.length) {
+            continue;
+        }
+        if (col + (item * direction[1]) < 0 || col + (item * direction[1]) >= checkerboardArr[row].length) {
+            continue;
+        }
         if (checkerboardArr[row + (item * direction[0])][col + (item * direction[1])] === checkerboardArr[row][col]) {
             count++;
         } else {

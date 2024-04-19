@@ -1,35 +1,43 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 import { AllGameChessmanType, GameName, GameChessman } from '../../type';
 import './index.css';
 
 interface PieceProps {
     chessman: AllGameChessmanType;
     gameType: GameName;
-    onClick: () => void;
+    rowIndex: number;
+    colIndex: number;
+    onClick: (location: [number, number]) => void;
 }
 
 /**
  *
  * @param chessman 棋子
+ * @param rowIndex 棋子所在行
+ * @param colIndex 棋子所在列
  * @param gameType 游戏类型
  * @param onClick 点击事件
  * @description 棋子组件
  */
-const Piece: FC<PieceProps> = ({ chessman, gameType, onClick }) => {
-    console.warn('Piece渲染');
+const Piece: FC<PieceProps> = memo(({ chessman, gameType, rowIndex, colIndex, onClick }) => {
     return (
-        gameType === GameName.TICTACTOE
-            ? <div className='piece-container' onClick={onClick}>
-                {chessman}
-            </div>
-            : <div className='piece-container' onClick={onClick}>
-                {
-                    chessman === GameChessman.Empty
-                        ? null
-                        : <div className={chessman === GameChessman.X ? 'piece-black' : 'piece-white'}></div>
-                }
-            </div>
+        <div className='checkerboard-col'>
+            {
+                gameType === GameName.TICTACTOE
+                    ? <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
+                        {chessman}
+                    </div>
+                    : <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
+                        {
+                            chessman === GameChessman.Empty
+                                ? null
+                                : <div className={chessman === GameChessman.X ? 'piece-black' : 'piece-white'}></div>
+                        }
+                    </div>
+
+            }
+        </div>
     );
-};
+});
 
 export { Piece };
