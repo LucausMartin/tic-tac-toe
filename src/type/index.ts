@@ -32,8 +32,17 @@ export enum ChessmanType {
 export type AllGameChessmanType = GameChessman.X | GameChessman.O | GameChessman.Empty;
 
 export enum GameChessman {
+    /**
+     * Player1 棋子
+     */
     X = 'X',
+    /**
+     * Player2 棋子
+     */
     O = 'O',
+    /**
+     * 空白棋子
+     */
     Empty = '',
 }
 

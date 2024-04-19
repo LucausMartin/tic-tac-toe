@@ -6,7 +6,7 @@ import { AllGameChessmanType, GameChessman } from '../type';
  * @param location 新棋子坐标
  * @param winLength 胜利条件（连子个数）
  * @param checkerboardArr 棋盘状态
- * @returns 胜利方
+ * @returns 胜利方或者平局（true代表平局）
  */
 export const judge = (location: [number, number], winLength: number, checkerboardArr: AllGameChessmanType[][]): GameChessman | null | true => {
     const [row, col] = location;

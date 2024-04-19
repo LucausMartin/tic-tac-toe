@@ -38,6 +38,7 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
     const [newPieceLocation, setNewPieceLocation] = useState<[number, number] | null>(null);
 
     useEffect(() => {
+        // 初始化棋盘
         const newCheckerboard = new Array(size);
         for (let item = 0; item < size; item++) {
             newCheckerboard[item] = new Array(size).fill(GameChessman.Empty);
@@ -67,6 +68,8 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
     }, [checkerboard, player]);
 
     useEffect(() => {
+        // 落子后的操作
+        // 判断是否有胜者
         if (winner !== GameChessman.Empty) {
             return;
         }
@@ -76,7 +79,7 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
         if (!newPieceLocation) {
             return;
         }
-        // 已经落子
+        // 已经落子的情况
         if (checkerboard[newPieceLocation[0]][newPieceLocation[1]] !== GameChessman.Empty) {
             return;
         }

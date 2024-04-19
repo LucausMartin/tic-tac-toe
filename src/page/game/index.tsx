@@ -38,9 +38,6 @@ interface GameButtonProps {
  * @description 切换游戏按钮组件
  */
 const GameButton: FC<GameButtonProps> = ({ gameType, onClick }) => {
-    /**
-     * @description 切换游戏配置
-     */
     return (
         <div className="game-button-container">
             {GOMOKUCONFIG.name}
