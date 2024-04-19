@@ -22,7 +22,7 @@ interface CheckerboardProps {
  * @description 棋盘组件
  */
 const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
-    // 实际棋盘二维数组
+    // 棋盘二维数组
     const [checkerboard, setCheckerboard] = useState<AllGameChessmanType[][] | null>(null);
     // 当前落子玩家
     const [player, setPlayer] = useState<AllGameChessmanType>(GameChessman.X);
@@ -113,7 +113,6 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
      *
      * @description 获取新落子的坐标
      * @param location 落子坐标
-     * @returns 落子函数
      */
     const dropPiece = useCallback((location: [number, number]) => {
         setNewPieceLocation(location);
