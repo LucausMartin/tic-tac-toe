@@ -99,11 +99,12 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
         }]));
         // 判断胜利
         const winnerTemp = judge(newPieceLocation, winLength, newCheckerboard);
-        if (winnerTemp) {
-            if (winnerTemp === true) {
+        if (winnerTemp !== null) {
+            setWinner(winnerTemp);
+        } else {
+            // 平局判断
+            if (record && record.length === size * size) {
                 setNoOneWin(true);
-            } else {
-                setWinner(winnerTemp);
             }
         }
     }, [newPieceLocation]);
@@ -133,22 +134,24 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
                     </span>
                 </div>
                 {
-                    checkerboard && checkerboard.map((row, rowIndex) => (
-                        <div key={rowIndex} className='checkerboard-row'>
-                            {
-                                row.map((__, colIndex) => (
-                                    <Piece
-                                        key={colIndex}
-                                        rowIndex={rowIndex}
-                                        colIndex={colIndex}
-                                        gameType={gameType}
-                                        chessman={checkerboard[rowIndex][colIndex]}
-                                        onClick={dropPiece}
-                                    />
-                                ))
-                            }
-                        </div>
-                    ))
+                    checkerboard && Array(size).fill(null)
+                        .map((__, rowIndex) => (
+                            <div key={rowIndex} className='checkerboard-row'>
+                                {
+                                    Array(size).fill(null)
+                                        .map((__, colIndex) => (
+                                            <Piece
+                                                key={colIndex}
+                                                rowIndex={rowIndex}
+                                                colIndex={colIndex}
+                                                gameType={gameType}
+                                                chessman={checkerboard.length === size ? checkerboard[rowIndex][colIndex] : GameChessman.Empty}
+                                                onClick={dropPiece}
+                                            />
+                                        ))
+                                }
+                            </div>
+                        ))
                 }
             </div>
             <Record
