@@ -1,5 +1,10 @@
 import { AllGameChessmanType, GameChessman } from '../type';
 
+interface DirectionType {
+    directionArr: [number, number][];
+    count: number;
+}
+
 /**
  *
  * @description 连子棋判断胜利方法
@@ -8,37 +13,37 @@ import { AllGameChessmanType, GameChessman } from '../type';
  * @param checkerboardArr 棋盘状态
  * @returns 胜利方或者平局（true代表平局）
  */
-export const judge = (location: [number, number], winLength: number, checkerboardArr: AllGameChessmanType[][]): GameChessman | null | true => {
-    const [row, col] = location;
-    // 定义四个方向
-    const directionArr: [number, number][] = [[1, 0], [0, 1], [1, 1], [1, -1]];
-    // 该方向可能胜利范围内最大的连子个数
-    let maxWinLength = 0;
-    // 判断是否平局
-    let isFull = true;
-    // 遍历棋盘
-    for (let itemI = 0; itemI < checkerboardArr.length; itemI++) {
-        for (let itemJ = 0; itemJ < checkerboardArr[itemI].length; itemJ++) {
-            if (checkerboardArr[itemI][itemJ] === '') {
-                isFull = false;
-                break;
-            }
+export const judge = (location: [number, number], winLength: number, checkerboardArr: AllGameChessmanType[][]): GameChessman | null => {
+    let winner = null;
+    const directionArr: DirectionType[] = [
+        {
+            directionArr: [[1, 0], [-1, 0]],
+            count: 0,
+        },
+        {
+            directionArr: [[0, 1], [0, -1]],
+            count: 0,
+        },
+        {
+            directionArr: [[1, 1], [-1, -1]],
+            count: 0,
+        },
+        {
+            directionArr: [[1, -1], [-1, 1]],
+            count: 0,
+        },
+    ];
+    // 获取最大连子个数
+    directionArr.forEach((item) => {
+        getmaxWinLength(item, checkerboardArr, location, winLength);
+    });
+    // 遍历 directionArr 查看是否胜利
+    directionArr.forEach((item) => {
+        if (item.count >= winLength - 1) {
+            winner = checkerboardArr[location[0]][location[1]] === GameChessman.X ? GameChessman.X : GameChessman.O;
         }
-    }
-    // 遍历四个方向
-    for (const direction of directionArr) {
-        // 获取该方向上的最大连子个数
-        const directionMaxWinLength = getmaxWinLength(direction, checkerboardArr, location, winLength);
-        if (directionMaxWinLength > maxWinLength) {
-            maxWinLength = directionMaxWinLength;
-        }
-    }
-    if (maxWinLength >= winLength) {
-        return checkerboardArr[row][col] === GameChessman.X ? GameChessman.X : GameChessman.O;
-    } else if (isFull) {
-        return true;
-    }
-    return null;
+    });
+    return winner;
 };
 
 /**
@@ -50,22 +55,25 @@ export const judge = (location: [number, number], winLength: number, checkerboar
  * @param winLength 胜利条件（连子个数）
  * @returns 最大连子个数
  */
-const getmaxWinLength = (direction: [number, number], checkerboardArr: AllGameChessmanType[][], location: [number, number], winLength: number): number => {
-    let count = 0;
-    for (let item = -winLength + 1; item < winLength; item++) {
-        const [row, col] = location;
-        if (row + (item * direction[0]) < 0 || row + (item * direction[0]) >= checkerboardArr.length) {
-            continue;
+const getmaxWinLength = (direction: DirectionType, checkerboardArr: AllGameChessmanType[][], location: [number, number], winLength: number): void => {
+    const [row, col] = location;
+    direction.directionArr.forEach((item) => {
+        let flag = 0;
+        let rowTemp = row + item[0];
+        let colTemp = col + item[1];
+        while (flag < winLength - 1) {
+            // console.log('location', rowTemp, colTemp);
+            if (rowTemp < 0 || rowTemp >= checkerboardArr.length || colTemp < 0 || colTemp >= checkerboardArr[0].length) {
+                // console.log('超出边界');
+                break;
+            }
+            if (checkerboardArr[rowTemp][colTemp] === checkerboardArr[row][col]) {
+                // console.log('相同', rowTemp, colTemp);
+                direction.count++;
+            }
+            rowTemp += item[0];
+            colTemp += item[1];
+            flag++;
         }
-        if (col + (item * direction[1]) < 0 || col + (item * direction[1]) >= checkerboardArr[row].length) {
-            continue;
-        }
-        if (checkerboardArr[row + (item * direction[0])][col + (item * direction[1])] === checkerboardArr[row][col]) {
-            count++;
-        } else {
-            continue;
-        }
-    }
-
-    return count;
+    });
 };
