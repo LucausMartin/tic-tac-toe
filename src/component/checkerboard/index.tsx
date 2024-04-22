@@ -65,6 +65,24 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
         }
         if (record && indexTemp !== record.length - 1) {
             setWinner(GameChessman.Empty);
+            setNoOneWin(false);
+        } else {
+            // 判断胜利
+            if (!checkerboard) {
+                return;
+            }
+            if (!newPieceLocation) {
+                return;
+            }
+            const winnerTemp = judge(newPieceLocation, winLength, checkerboard);
+            if (winnerTemp !== null) {
+                setWinner(winnerTemp);
+            } else {
+            // 平局判断
+                if (record && record.length - 1 === size * size) {
+                    setNoOneWin(true);
+                }
+            }
         }
     }, [checkerboard, player]);
 
