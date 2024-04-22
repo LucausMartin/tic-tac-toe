@@ -55,7 +55,11 @@ export enum GameName {
      * 五子棋
      */
     GOMOKU = 'gomoku',
+}
 
+export interface RecordType {
+    chessState: AllGameChessmanType[][];
+    player: GameChessman;
 }
 
 export type ReactSetState<T> = React.Dispatch<React.SetStateAction<T>>;

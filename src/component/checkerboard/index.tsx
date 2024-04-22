@@ -1,13 +1,10 @@
 import { FC, useState, useEffect, useCallback } from 'react';
-import { AllGameChessmanType, GameName, GameChessman, ReactSetState } from '../../type';
+import { AllGameChessmanType, GameName, GameChessman, ReactSetState, RecordType } from '../../type';
 import { Piece } from '../piece';
 import { judge } from '../../tool';
+import { useDispatch, useSelector } from 'react-redux';
+import { addRecord, selectRecord } from '../../stroe/slices/recordSlice';
 import './index.css';
-
-interface RecordType {
-    chessState: AllGameChessmanType[][];
-    player: GameChessman;
-}
 
 interface CheckerboardProps {
     size: number;
@@ -22,12 +19,13 @@ interface CheckerboardProps {
  * @description 棋盘组件
  */
 const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
+    const dispatch = useDispatch();
+    // 落子及胜者记录
+    const record = useSelector(selectRecord);
     // 棋盘二维数组
     const [checkerboard, setCheckerboard] = useState<AllGameChessmanType[][] | null>(null);
     // 当前落子玩家
     const [player, setPlayer] = useState<AllGameChessmanType>(GameChessman.X);
-    // 落子及胜者记录
-    const [record, setRecord] = useState<RecordType[] | null>(null);
     // 胜者
     const [winner, setWinner] = useState<GameChessman>(GameChessman.Empty);
     // 棋盘状态所处第几条记录
@@ -45,10 +43,13 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
         }
         setCheckerboard(newCheckerboard);
         setPlayer(GameChessman.X);
-        setRecord([{
-            chessState: newCheckerboard,
-            player: GameChessman.O,
-        }]);
+        dispatch(addRecord({
+            recordIndex: -1,
+            chessState: {
+                chessState: newCheckerboard,
+                player: GameChessman.X,
+            },
+        }));
     }, [size, winLength, gameType]);
 
     useEffect(() => {
@@ -93,10 +94,13 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
         // 切换玩家
         setPlayer(player === GameChessman.X ? GameChessman.O : GameChessman.X);
         // 根据棋盘状态所处第几条记录在其之后添加棋盘状态
-        setRecord(record && record.slice(0, recordIndex + 1).concat([{
-            chessState: newCheckerboard,
-            player,
-        }]));
+        dispatch(addRecord({
+            recordIndex,
+            chessState: {
+                chessState: newCheckerboard,
+                player: player === GameChessman.X ? GameChessman.O : GameChessman.X,
+            },
+        }));
         // 判断胜利
         const winnerTemp = judge(newPieceLocation, winLength, newCheckerboard);
         if (winnerTemp !== null) {
@@ -186,7 +190,7 @@ const Record: FC<RecordProps> = ({ record, setCheckerboard, setPlayer }) => {
         return () => {
             if (record && record[step].chessState) {
                 setCheckerboard(record[step].chessState);
-                setPlayer(record[step].player === GameChessman.X ? GameChessman.O : GameChessman.X);
+                setPlayer(record[step].player === GameChessman.X ? GameChessman.X : GameChessman.O);
             }
         };
     };
