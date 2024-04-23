@@ -1,5 +1,5 @@
-import { FC, useState, useEffect, useCallback } from 'react';
-import { AllGameChessmanType, GameName, GameChessman, ReactSetState, RecordType } from '../../type';
+import { FC, useState, useEffect, useCallback, memo } from 'react';
+import { AllGameChessmanType, GameName, GameChessman } from '../../type';
 import { Piece } from '../piece';
 import { judge } from '../../tool';
 import { useDispatch, useSelector } from 'react-redux';
@@ -35,8 +35,8 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
     // 新落子坐标
     const [newPieceLocation, setNewPieceLocation] = useState<[number, number] | null>(null);
 
+    // 初始化棋盘
     useEffect(() => {
-        // 初始化棋盘
         const newCheckerboard = new Array(size);
         for (let item = 0; item < size; item++) {
             newCheckerboard[item] = new Array(size).fill(GameChessman.Empty);
@@ -48,47 +48,13 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
             chessState: {
                 chessState: newCheckerboard,
                 player: GameChessman.X,
+                result: GameChessman.Empty,
             },
         }));
     }, [size, winLength, gameType]);
 
+    // 落子后的操作
     useEffect(() => {
-        // 判断棋盘状态所处第几条记录
-        let indexTemp = 0;
-        if (record) {
-            record.forEach((item, index) => {
-                if (item.chessState === checkerboard) {
-                    setRecordIndex(index);
-                    indexTemp = index;
-                }
-            });
-        }
-        if (record && indexTemp !== record.length - 1) {
-            setWinner(GameChessman.Empty);
-            setNoOneWin(false);
-        } else {
-            // 判断胜利
-            if (!checkerboard) {
-                return;
-            }
-            if (!newPieceLocation) {
-                return;
-            }
-            const winnerTemp = judge(newPieceLocation, winLength, checkerboard);
-            if (winnerTemp !== null) {
-                setWinner(winnerTemp);
-            } else {
-            // 平局判断
-                if (record && record.length - 1 === size * size) {
-                    setNoOneWin(true);
-                }
-            }
-        }
-    }, [checkerboard, player]);
-
-    useEffect(() => {
-        // 落子后的操作
-        // 判断是否有胜者
         if (winner !== GameChessman.Empty) {
             return;
         }
@@ -98,10 +64,10 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
         if (!newPieceLocation) {
             return;
         }
-        // 已经落子的情况
         if (checkerboard[newPieceLocation[0]][newPieceLocation[1]] !== GameChessman.Empty) {
             return;
         }
+
         // 添加新子
         const newCheckerboard = checkerboard.map((row, rowIndex) => (
             row.map((col, colIndex) => (
@@ -109,27 +75,56 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
             ))
         ));
         setCheckerboard(newCheckerboard);
+
         // 切换玩家
         setPlayer(player === GameChessman.X ? GameChessman.O : GameChessman.X);
+
+        // 判断胜利并记录胜利情况
+        let result: GameChessman | 'draw' | '' = '';
+        const winnerTemp = judge(newPieceLocation, winLength, newCheckerboard);
+        if (winnerTemp !== null) {
+            setWinner(winnerTemp);
+            result = winnerTemp;
+        } else {
+            // 平局判断
+            if (record && record.length === size * size) {
+                setNoOneWin(true);
+                result = 'draw';
+            }
+        }
+
         // 根据棋盘状态所处第几条记录在其之后添加棋盘状态
         dispatch(addRecord({
             recordIndex,
             chessState: {
                 chessState: newCheckerboard,
                 player: player === GameChessman.X ? GameChessman.O : GameChessman.X,
+                result,
             },
         }));
-        // 判断胜利
-        const winnerTemp = judge(newPieceLocation, winLength, newCheckerboard);
-        if (winnerTemp !== null) {
-            setWinner(winnerTemp);
-        } else {
-            // 平局判断
-            if (record && record.length === size * size) {
-                setNoOneWin(true);
-            }
-        }
+        setRecordIndex(recordIndex + 1);
     }, [newPieceLocation]);
+
+    // 点击记录后的操作
+    useEffect(() => {
+        if (!record) {
+            return;
+        }
+
+        // 根据棋盘状态所处第几条记录设置棋盘状态
+        if (record[recordIndex] && record[recordIndex].chessState) {
+            setCheckerboard(record[recordIndex].chessState);
+            setPlayer(record[recordIndex].player);
+        }
+
+        // 赋值胜者
+        if (record && record[recordIndex].result === 'draw') {
+            setNoOneWin(true);
+        } else {
+            setNoOneWin(false);
+            setWinner(record[recordIndex].result as GameChessman);
+        }
+    }, [recordIndex]);
 
 
     /**
@@ -139,6 +134,10 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
      */
     const dropPiece = useCallback((location: [number, number]) => {
         setNewPieceLocation(location);
+    }, []);
+
+    const updateRecordIndex = useCallback((index: number) => {
+        setRecordIndex(index);
     }, []);
 
     return (
@@ -176,53 +175,41 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
                         ))
                 }
             </div>
-            <Record
-                record={record}
-                setCheckerboard={setCheckerboard}
-                setPlayer={setPlayer}
-            />
+            {
+                record &&
+                <Record
+                    setRecordIndex={updateRecordIndex}
+                />
+            }
         </div>
     );
 };
 
 
 interface RecordProps {
-    record: RecordType[] | null;
-    setCheckerboard: ReactSetState<AllGameChessmanType[][] | null>;
-    setPlayer: ReactSetState<AllGameChessmanType>;
+    setRecordIndex: (index: number) => void;
 }
 /**
  *
- * @param record 落子及胜者记录
- * @param setCheckerboard 设置棋盘状态
- * @param setPlayer 设置当前落子玩家
+ * @param setRecordIndex 设置棋盘状态所处第几条记录
  * @description 落子及胜者记录展示组件
  */
-const Record: FC<RecordProps> = ({ record, setCheckerboard, setPlayer }) => {
-    /**
-     *
-     * @param step 需要移动到的步数
-     * @returns 返回移动到指定步数的函数
-     */
-    const moveToStep = (step: number) => {
-        return () => {
-            if (record && record[step].chessState) {
-                setCheckerboard(record[step].chessState);
-                setPlayer(record[step].player === GameChessman.X ? GameChessman.X : GameChessman.O);
-            }
-        };
-    };
+const Record: FC<RecordProps> = memo(({ setRecordIndex }) => {
+    console.warn('Record render');
+
+    // 落子及胜者记录
+    const record = useSelector(selectRecord);
     return (
         <div className='record-container'>
             {
                 record && record.map((__, index) => (
                     <div key={index}>
-                        <button className='record-button' onClick={moveToStep(index)}>move to {index}</button>
+                        <button className='record-button' onClick={() => setRecordIndex(index)}>move to {index}</button>
                     </div>
                 ))
             }
         </div>
     );
-};
+});
 
 export { Checkerboard };
