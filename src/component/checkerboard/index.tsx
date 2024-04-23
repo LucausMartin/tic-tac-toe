@@ -1,12 +1,12 @@
-import { Component } from 'react';
+import { Component, PureComponent } from 'react';
 import { GameName, GameChessman } from '../../type';
 import { Piece } from '../piece';
 import { judge } from '../../tool';
-import './index.css';
 import { RootState } from '../../stroe';
 import { connect } from 'react-redux';
 import { Dispatch, bindActionCreators } from '@reduxjs/toolkit';
 import { addRecord } from '../../stroe/slices/recordSlice';
+import './index.css';
 
 interface CheckerboardProps {
     size: number;
@@ -38,7 +38,6 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
             winner: GameChessman.Empty,
             recordIndex: 0,
             noOneWin: false,
-
         };
         this.props.addRecord({
             recordIndex: -1,
@@ -50,13 +49,44 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         });
     }
 
-    initialState = {
-        checkerboard: null,
-        player: GameChessman.X,
-        winner: GameChessman.Empty,
-        recordIndex: 0,
-        noOneWin: false,
-    };
+    /**
+     * @param prevProps 更新之前的 props
+     */
+    componentDidUpdate (prevProps: Readonly<CheckerboardProps>): void {
+        // 切换游戏模式重置棋盘状态
+        if (prevProps.gameType !== this.props.gameType) {
+            this.clearCheckerboard();
+        }
+    }
+
+    /**
+     * @description 重置棋盘状态
+     */
+    clearCheckerboard = () => {
+        const initialState = {
+            checkerboard: null,
+            player: GameChessman.X,
+            winner: GameChessman.Empty,
+            recordIndex: 0,
+            noOneWin: false,
+        };
+        this.setState(initialState);
+        const { size } = this.props;
+        const newCheckerboard = new Array(size);
+        for (let item = 0; item < size; item++) {
+            newCheckerboard[item] = new Array(size).fill(GameChessman.Empty);
+        }
+        this.setState({ checkerboard: newCheckerboard });
+        this.props.addRecord({
+            recordIndex: -1,
+            chessState: {
+                chessState: newCheckerboard,
+                player: GameChessman.X,
+                result: GameChessman.Empty,
+            },
+        });
+    }
+
     /**
      *
      * @param location 落子位置
@@ -108,26 +138,25 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     };
 
     /**
-     * @param prevProps 更新之前的 props
+     *
+     * @param recordIndex 记录索引
      */
-    componentDidUpdate (prevProps: Readonly<CheckerboardProps>): void {
-        // 切换游戏模式重置棋盘状态
-        if (prevProps.gameType !== this.props.gameType) {
-            this.setState(this.initialState);
-            const { size } = this.props;
-            const newCheckerboard = new Array(size);
-            for (let item = 0; item < size; item++) {
-                newCheckerboard[item] = new Array(size).fill(GameChessman.Empty);
+    updateRecord = (recordIndex: number) => {
+        const { record } = this.props;
+        this.setState({ recordIndex });
+        // 先重置棋盘胜利状态
+        this.setState({ noOneWin: false });
+        this.setState({ winner: GameChessman.Empty });
+
+        // 更新棋盘状态并根据记录更新胜利状态
+        if (record && record[recordIndex].chessState) {
+            this.setState({ checkerboard: record[recordIndex].chessState });
+            this.setState({ player: record[recordIndex].player });
+            if (record[recordIndex].result === 'draw') {
+                this.setState({ noOneWin: true });
+            } else if (record[recordIndex].result !== 'draw' && record[recordIndex].result !== GameChessman.Empty) {
+                this.setState({ winner: record[recordIndex].result as GameChessman });
             }
-            this.setState({ checkerboard: newCheckerboard });
-            this.props.addRecord({
-                recordIndex: -1,
-                chessState: {
-                    chessState: newCheckerboard,
-                    player: GameChessman.X,
-                    result: GameChessman.Empty,
-                },
-            });
         }
     }
 
@@ -170,11 +199,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
                 {
                     this.props.record &&
                     <ConnectedRecord
-                        setCheckerboard={(checkerboard: CheckerboardState['checkerboard']) => this.setState({ checkerboard })}
-                        setPlayer={(player: CheckerboardState['player']) => this.setState({ player })}
-                        setRecordIndex={(recordIndex: CheckerboardState['recordIndex']) => this.setState({ recordIndex })}
-                        setNoOneWin={(noOneWin: CheckerboardState['noOneWin']) => this.setState({ noOneWin })}
-                        setWinner={(winner: CheckerboardState['winner']) => this.setState({ winner })}
+                        updateRecord={this.updateRecord}
                     />
                 }
             </div>
@@ -184,59 +209,29 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
 
 interface RecordProps {
     record: RootState['record']['value'];
-    setCheckerboard: (checkerboard: CheckerboardState['checkerboard']) => void;
-    setPlayer: (player: CheckerboardState['player']) => void;
-    setRecordIndex: (recordIndex: CheckerboardState['recordIndex']) => void;
-    setNoOneWin: (noOneWin: CheckerboardState['noOneWin']) => void;
-    setWinner: (winner: CheckerboardState['winner']) => void;
+    updateRecord: (recordIndex: number) => void;
 }
 /**
  *
  * @param record 落子及胜者记录
- * @param setCheckerboard 设置棋盘状态
- * @param setPlayer 设置当前落子玩家
- * @param setRecordIndex 设置当前记录索引
- * @param setNoOneWin 设置是否平局
+ * @param updateRecord 更新记录函数
  * @description 落子及胜者记录展示组件
  */
-class Record extends Component<RecordProps> {
+class Record extends PureComponent<RecordProps> {
     constructor (props: RecordProps) {
         super(props);
     }
 
-    /**
-     *
-     * @param step 需要移动到的步数
-     * @returns 返回移动到指定步数的函数
-     */
-    moveToStep = (step: number) => {
-        const { record } = this.props;
-        return () => {
-            if (record && record[step].chessState) {
-                // 点击记录更新棋盘、玩家、记录索引、是否平局、胜者
-                this.props.setCheckerboard(record[step].chessState);
-                this.props.setPlayer(record[step].player);
-                this.props.setRecordIndex(step);
-                this.props.setNoOneWin(false);
-                this.props.setWinner(GameChessman.Empty);
-
-                // 根据记录更新是否平局和胜者
-                if (record && record[step].result === 'draw') {
-                    this.props.setNoOneWin(true);
-                } else if (record && record[step].result !== 'draw' && record[step].result !== GameChessman.Empty) {
-                    this.props.setWinner(record[step].result as GameChessman);
-                }
-            }
-        };
-    };
-
     render () {
+        console.warn('record render');
         return (
             <div className='record-container'>
                 {
                     this.props.record && this.props.record.map((__, index) => (
                         <div key={index}>
-                            <button className='record-button' onClick={this.moveToStep(index)}>move to {index}</button>
+                            <button className='record-button' onClick={
+                                () => this.props.updateRecord(index)
+                            }>move to {index}</button>
                         </div>
                     ))
                 }

@@ -33,10 +33,12 @@ export const judge = (location: [number, number], winLength: number, checkerboar
             count: 0,
         },
     ];
+
     // 获取最大连子个数
     directionArr.forEach((item) => {
         getmaxWinLength(item, checkerboardArr, location, winLength);
     });
+
     // 遍历 directionArr 查看是否胜利
     directionArr.forEach((item) => {
         if (item.count >= winLength - 1) {
@@ -62,13 +64,10 @@ const getmaxWinLength = (direction: DirectionType, checkerboardArr: AllGameChess
         let rowTemp = row + item[0];
         let colTemp = col + item[1];
         while (flag < winLength - 1) {
-            // console.log('location', rowTemp, colTemp);
             if (rowTemp < 0 || rowTemp >= checkerboardArr.length || colTemp < 0 || colTemp >= checkerboardArr[0].length) {
-                // console.log('超出边界');
                 break;
             }
             if (checkerboardArr[rowTemp][colTemp] === checkerboardArr[row][col]) {
-                // console.log('相同', rowTemp, colTemp);
                 direction.count++;
             }
             rowTemp += item[0];

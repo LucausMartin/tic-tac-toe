@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { PureComponent } from 'react';
 import { AllGameChessmanType, GameName, GameChessman } from '../../type';
 import './index.css';
 
@@ -19,8 +19,9 @@ interface PieceProps {
  * @param onClick 点击事件
  * @description 棋子组件
  */
-class Piece extends Component<PieceProps> {
+class Piece extends PureComponent<PieceProps> {
     render () {
+        console.warn('Piece render');
         const { chessman, gameType, rowIndex, colIndex, onClick } = this.props;
         return (
             <div className='checkerboard-col'>
