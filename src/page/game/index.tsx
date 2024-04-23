@@ -1,52 +1,58 @@
-import { FC, useState } from 'react';
+import { Component } from 'react';
 import { GOMOKUCONFIG, TICTACTOECONFIG } from '../../constant';
 import { GameName } from '../../type';
-import { Checkerboard } from '../../component';
+import { ConnectedCheckerboard } from '../../component';
 import './index.css';
 
 /**
- *
  * @description 游戏根组件
  */
-const Game: FC = () => {
-    const [gameConfig, setGameConfig] = useState(TICTACTOECONFIG);
+class Game extends Component {
+    constructor (props: {}) {
+        super(props);
+    }
 
-    /**
-     * @description 切换游戏配置
-     */
-    const changeGameConfig = () => {
-        setGameConfig(gameConfig.name === GOMOKUCONFIG.name ? TICTACTOECONFIG : GOMOKUCONFIG);
+    state = { gameConfig: TICTACTOECONFIG };
+
+    changeGameConfig = () => {
+        this.setState({ gameConfig: this.state.gameConfig.name === GOMOKUCONFIG.name ? TICTACTOECONFIG : GOMOKUCONFIG });
     };
 
-    return (
-        <div className='game-container'>
-            <GameButton gameType={gameConfig.name} onClick={changeGameConfig}/>
-            <Checkerboard size={gameConfig.size} winLength={gameConfig.winLength} gameType={gameConfig.name}/>
-        </div>
-    );
-};
-
+    render () {
+        return (
+            <div className='game-container'>
+                <GameButton gameType={this.state.gameConfig.name} onClick={this.changeGameConfig}/>
+                <ConnectedCheckerboard size={this.state.gameConfig.size} winLength={this.state.gameConfig.winLength} gameType={this.state.gameConfig.name} />
+            </div>
+        );
+    }
+}
 
 interface GameButtonProps {
     gameType: GameName;
     onClick: () => void;
 }
 /**
- *
+ * @description 切换游戏按钮组件
  * @param gameType 游戏类型
  * @param onClick 切换游戏配置函数
- * @description 切换游戏按钮组件
  */
-const GameButton: FC<GameButtonProps> = ({ gameType, onClick }) => {
-    return (
-        <div className="game-button-container">
-            {GOMOKUCONFIG.name}
-            <div className={gameType === GOMOKUCONFIG.name ? 'game-button-gom' : 'game-button-tic'} onClick={onClick}>
-                <div className={gameType === GOMOKUCONFIG.name ? 'game-button-ball-left' : 'game-button-ball-right'}></div>
+class GameButton extends Component<GameButtonProps> {
+    constructor (props: GameButtonProps) {
+        super(props);
+    }
+
+    render () {
+        return (
+            <div className='game-button-container'>
+                {GOMOKUCONFIG.name}
+                <div className={this.props.gameType === GOMOKUCONFIG.name ? 'game-button-gom' : 'game-button-tic'} onClick={this.props.onClick}>
+                    <div className={this.props.gameType === GOMOKUCONFIG.name ? 'game-button-ball-left' : 'game-button-ball-right'}></div>
+                </div>
+                {TICTACTOECONFIG.name}
             </div>
-            {TICTACTOECONFIG.name}
-        </div>
-    );
-};
+        );
+    }
+}
 
 export { Game };

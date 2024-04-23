@@ -60,6 +60,7 @@ export enum GameName {
 export interface RecordType {
     chessState: AllGameChessmanType[][];
     player: GameChessman;
+    result: GameChessman | 'draw' | '';
 }
 
 export type ReactSetState<T> = React.Dispatch<React.SetStateAction<T>>;

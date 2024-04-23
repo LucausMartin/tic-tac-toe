@@ -3,6 +3,8 @@ import recordState from './slices/recordSlice.ts';
 
 const store = configureStore({ reducer: { record: recordState } });
 
+export type storeType = typeof store;
+
 export default store;
 
 // 从 store 本身推断出 `RootState` 和 `AppDispatch` 类型

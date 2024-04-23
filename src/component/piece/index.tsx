@@ -1,4 +1,4 @@
-import { FC, memo } from 'react';
+import { Component } from 'react';
 import { AllGameChessmanType, GameName, GameChessman } from '../../type';
 import './index.css';
 
@@ -19,25 +19,27 @@ interface PieceProps {
  * @param onClick 点击事件
  * @description 棋子组件
  */
-const Piece: FC<PieceProps> = memo(({ chessman, gameType, rowIndex, colIndex, onClick }) => {
-    return (
-        <div className='checkerboard-col'>
-            {
-                gameType === GameName.TICTACTOE
-                    ? <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
-                        {chessman}
-                    </div>
-                    : <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
-                        {
-                            chessman === GameChessman.Empty
-                                ? null
-                                : <div className={chessman === GameChessman.X ? 'piece-black' : 'piece-white'}></div>
-                        }
-                    </div>
-
-            }
-        </div>
-    );
-});
+class Piece extends Component<PieceProps> {
+    render () {
+        const { chessman, gameType, rowIndex, colIndex, onClick } = this.props;
+        return (
+            <div className='checkerboard-col'>
+                {
+                    gameType === GameName.TICTACTOE
+                        ? <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
+                            {chessman}
+                        </div>
+                        : <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
+                            {
+                                chessman === GameChessman.Empty
+                                    ? null
+                                    : <div className={chessman === GameChessman.X ? 'piece-black' : 'piece-white'}></div>
+                            }
+                        </div>
+                }
+            </div>
+        );
+    }
+}
 
 export { Piece };

@@ -1,16 +1,13 @@
-import { FC } from 'react';
+import { Component } from 'react';
 import { Game } from './page';
 import './global.css';
 
-
-/**
- *
- * @description 项目根组件
- */
-const App: FC = () => {
-    return (
-        <Game />
-    );
-};
+class App extends Component {
+    render () {
+        return (
+            <Game />
+        );
+    }
+}
 
 export default App;
