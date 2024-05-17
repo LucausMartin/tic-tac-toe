@@ -1,20 +1,19 @@
 import { FC, useState, useEffect, useCallback, memo } from 'react';
-import { AllGameChessmanType, GameChessman, GameConfig, GameName } from '../../type';
+import { AllGameChessmanType, GameChessman, GameName } from '../../type';
 import { Piece } from '../piece';
 import { judge } from '../../tool';
 import { useDispatch, useSelector } from 'react-redux';
-import { addRecord, selectRecord, initialRecord } from '../../stroe/slices/recordSlice';
+import { addRecord, selectRecord, initialRecord } from '../../store/slices/recordSlice';
+import { selectConfig } from '../../store/slices/gameConfigSlice';
 import './index.css';
 
-interface CheckerboardProps {
-    gameConfig: GameConfig;
-}
 /**
  *
  * @param gameConfig 游戏配置
  * @description 棋盘组件
  */
-const Checkerboard: FC<CheckerboardProps> = ({ gameConfig }) => {
+const Checkerboard = () => {
+    const { size, winLength, name } = useSelector(selectConfig);
     const dispatch = useDispatch();
     // 落子及胜者记录
     const record = useSelector(selectRecord);
@@ -31,13 +30,13 @@ const Checkerboard: FC<CheckerboardProps> = ({ gameConfig }) => {
 
     // 初始化棋盘
     useEffect(() => {
-        const newCheckerboard = createTwoDimensionalArray(gameConfig.size);
+        const newCheckerboard = createTwoDimensionalArray(size);
         setCheckerboard(newCheckerboard);
         setPlayer(GameChessman.X);
         dispatch(initialRecord({ checkerboard: newCheckerboard }));
         setWinner(GameChessman.Empty);
         setRecordIndex(0);
-    }, [gameConfig]);
+    }, [size]);
 
     // 落子后的操作
     useEffect(() => {
@@ -67,13 +66,13 @@ const Checkerboard: FC<CheckerboardProps> = ({ gameConfig }) => {
 
         // 判断胜利并记录胜利情况
         let result: GameChessman | 'draw' = GameChessman.Empty;
-        const winnerTemp = judge(newPieceLocation, gameConfig.winLength, newCheckerboard);
+        const winnerTemp = judge(newPieceLocation, winLength, newCheckerboard);
         if (winnerTemp !== null) {
             setWinner(winnerTemp);
             result = winnerTemp;
         } else {
             // 平局判断
-            if (record && record.length === gameConfig.size * gameConfig.size) {
+            if (record && record.length === size * size) {
                 setWinner('none');
                 result = 'draw';
             }
@@ -118,7 +117,7 @@ const Checkerboard: FC<CheckerboardProps> = ({ gameConfig }) => {
     const createTwoDimensionalArray: (size: number) => AllGameChessmanType[][] = useCallback((size: number) => {
         return new Array(size).fill(null)
             .map(() => new Array(size).fill(GameChessman.Empty));
-    }, [gameConfig]);
+    }, [size]);
 
     /**
      *
@@ -141,10 +140,10 @@ const Checkerboard: FC<CheckerboardProps> = ({ gameConfig }) => {
         <div className='checkerboard-container'>
             <div className='checkerboard-chess-container'>
                 <div className='checkerboard-chess-info'>
-                    {gameConfig.name !== GameName.GOMOKU && <span>
+                    {name !== GameName.GOMOKU && <span>
                         Winner: {winner}
                     </span>}
-                    {gameConfig.name === GameName.GOMOKU && <span>
+                    {name === GameName.GOMOKU && <span>
                         Winner: {
                             winner === GameChessman.X ? 'Black' : <>{winner === GameChessman.O ? 'White' : winner}</>
                         }
@@ -154,18 +153,17 @@ const Checkerboard: FC<CheckerboardProps> = ({ gameConfig }) => {
                     </span>
                 </div>
                 {
-                    checkerboard && Array(gameConfig.size).fill(null)
+                    checkerboard && Array(size).fill(null)
                         .map((__, rowIndex) => (
                             <div key={rowIndex} className='checkerboard-row'>
                                 {
-                                    Array(gameConfig.size).fill(null)
+                                    Array(size).fill(null)
                                         .map((__, colIndex) => (
                                             <Piece
                                                 key={colIndex}
                                                 rowIndex={rowIndex}
                                                 colIndex={colIndex}
-                                                gameType={gameConfig.name}
-                                                chessman={checkerboard.length === gameConfig.size ? checkerboard[rowIndex][colIndex] : GameChessman.Empty}
+                                                chessman={checkerboard.length === size ? checkerboard[rowIndex][colIndex] : GameChessman.Empty}
                                                 onClick={dropPiece}
                                             />
                                         ))

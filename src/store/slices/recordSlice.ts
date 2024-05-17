@@ -3,31 +3,31 @@ import type { RootState } from '../index';
 import { GameChessman, RecordType, AllGameChessmanType } from '../../type';
 
 interface RecordState {
-    value: RecordType[] | null;
+    record: RecordType[] | null;
 }
 
 // 使用该类型定义初始 state
-const initialState: RecordState = { value: null };
+const initialState: RecordState = { record: null };
 
 export const recordSlice = createSlice({
-    name: 'record',
+    name: 'recorder',
     initialState,
     reducers: {
         addRecord: (state, action: PayloadAction<{
             recordIndex: number;
             chessState: RecordType;
         }>) => {
-            if (state.value) {
-                state.value.splice(action.payload.recordIndex + 1, state.value.length - action.payload.recordIndex);
-                state.value.push(action.payload.chessState);
+            if (state.record) {
+                state.record.splice(action.payload.recordIndex + 1, state.record.length - action.payload.recordIndex);
+                state.record.push(action.payload.chessState);
             } else {
-                state.value = [action.payload.chessState];
+                state.record = [action.payload.chessState];
             }
         },
         initialRecord: (state, action: PayloadAction<{
             checkerboard: AllGameChessmanType[][];
         }>) => {
-            state.value = [{
+            state.record = [{
                 chessState: action.payload.checkerboard,
                 player: GameChessman.X,
                 result: GameChessman.Empty,
@@ -45,6 +45,6 @@ export const { addRecord, initialRecord } = recordSlice.actions;
  * @param state Redux 集中管理的状态
  * @returns 记录的状态
  */
-export const selectRecord = (state: RootState) => state.record.value;
+export const selectRecord = (state: RootState) => state.recorder.record;
 
 export default recordSlice.reducer;

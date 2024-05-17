@@ -1,10 +1,12 @@
 import { FC, memo } from 'react';
 import { AllGameChessmanType, GameName, GameChessman } from '../../type';
+import { useSelector } from 'react-redux';
+import { selectConfig } from '../../store/slices/gameConfigSlice';
+
 import './index.css';
 
 interface PieceProps {
     chessman: AllGameChessmanType;
-    gameType: GameName;
     rowIndex: number;
     colIndex: number;
     onClick: (location: [number, number]) => void;
@@ -15,15 +17,15 @@ interface PieceProps {
  * @param chessman 棋子
  * @param rowIndex 棋子所在行
  * @param colIndex 棋子所在列
- * @param gameType 游戏类型
  * @param onClick 点击事件
  * @description 棋子组件
  */
-const Piece: FC<PieceProps> = memo(({ chessman, gameType, rowIndex, colIndex, onClick }) => {
+const Piece: FC<PieceProps> = memo(({ chessman, rowIndex, colIndex, onClick }) => {
+    const { name } = useSelector(selectConfig);
     return (
         <div className='checkerboard-col'>
             {
-                gameType === GameName.TICTACTOE
+                name === GameName.TICTACTOE
                     ? <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
                         {chessman}
                     </div>
