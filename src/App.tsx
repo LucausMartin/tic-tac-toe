@@ -1,11 +1,11 @@
 import { Component } from 'react';
-import { Game } from './page';
+import { ConnectedGame } from './page';
 import './global.css';
 
 class App extends Component {
     render () {
         return (
-            <Game />
+            <ConnectedGame />
         );
     }
 }

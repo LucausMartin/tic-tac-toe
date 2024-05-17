@@ -1,6 +1,6 @@
 import { Component, PureComponent } from 'react';
 import { GameName, GameChessman, GameConfig } from '../../type';
-import { Piece } from '../piece';
+import { ConnectedPiece } from '../piece';
 import { judge } from '../../tool';
 import { RootState } from '../../store';
 import { connect } from 'react-redux';
@@ -9,10 +9,10 @@ import { addRecord, initialRecord } from '../../store/slices/recordSlice';
 import './index.css';
 
 interface CheckerboardProps {
-    gameConfig: GameConfig;
+    config: GameConfig;
     addRecord: typeof addRecord;
     initialRecord: typeof initialRecord;
-    record: RootState['record']['value'];
+    record: RootState['recorder']['record'];
 }
 
 interface CheckerboardState {
@@ -25,7 +25,7 @@ interface CheckerboardState {
 class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     constructor (props: CheckerboardProps) {
         super(props);
-        const { size } = props.gameConfig;
+        const { size } = props.config;
         const newCheckerboard = new Array(size).fill(null)
             .map(() => new Array(size).fill(GameChessman.Empty));
         this.state = {
@@ -42,7 +42,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
      */
     componentDidUpdate (prevProps: Readonly<CheckerboardProps>): void {
         // 切换游戏模式重置棋盘状态
-        if (prevProps.gameConfig.name !== this.props.gameConfig.name) {
+        if (prevProps.config.name !== this.props.config.name) {
             this.clearCheckerboard();
         }
     }
@@ -59,7 +59,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
             noOneWin: false,
         };
         this.setState(initialState);
-        const { size } = this.props.gameConfig;
+        const { size } = this.props.config;
         const newCheckerboard = new Array(size).fill(null)
             .map(() => new Array(size).fill(GameChessman.Empty));
         this.setState({ checkerboard: newCheckerboard });
@@ -74,7 +74,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     dropPiece = (location: [number, number]) => {
         const { checkerboard, player, winner } = this.state;
         const { record } = this.props;
-        const { size, winLength } = this.props.gameConfig;
+        const { size, winLength } = this.props.config;
 
         // 如果已经有胜者或者棋盘不存在不允许落子
         if (winner !== GameChessman.Empty || !checkerboard) return;
@@ -139,7 +139,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     }
 
     render () {
-        const { size, name } = this.props.gameConfig;
+        const { size, name } = this.props.config;
         const { checkerboard, player, winner } = this.state;
 
         return (
@@ -164,11 +164,10 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
                                   {Array(size)
                                       .fill(null)
                                       .map((__, colIndex) => (
-                                          <Piece
+                                          <ConnectedPiece
                                               key={colIndex}
                                               rowIndex={rowIndex}
                                               colIndex={colIndex}
-                                              gameType={name}
                                               chessman={checkerboard.length === size ? checkerboard[rowIndex][colIndex] : GameChessman.Empty}
                                               onClick={this.dropPiece}
                                           />
@@ -188,7 +187,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
 }
 
 interface RecordProps {
-    record: RootState['record']['value'];
+    record: RootState['recorder']['record'];
     updateRecord: (recordIndex: number) => void;
 }
 /**
@@ -222,14 +221,21 @@ class Record extends PureComponent<RecordProps> {
 /**
  *
  * @param state Redux 集中管理的状态
+ * @returns 返回记录和配置状态
+ */
+const mapAllStateToProps = (state: RootState) => ({ record: state.recorder.record, config: state.configer.config });
+
+/**
+ *
+ * @param state Redux 集中管理的状态
  * @returns 返回记录状态
  */
-const mapStateToProps = (state: RootState) => ({ record: state.record.value });
+const mapRecordStateToProps = (state: RootState) => ({ record: state.recorder.record });
 
 /**
  *
  * @param dispatch Redux store 的 dispatch
- * @returns 返回 addRecord 函数
+ * @returns 返回 addRecord 和 initialRecord 函数
  */
 const mapDispatchToProps = (dispatch: Dispatch) =>
     bindActionCreators(
@@ -238,5 +244,5 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
     );
 
 
-export const ConnectedCheckerboard = connect(mapStateToProps, mapDispatchToProps)(Checkerboard);
-export const ConnectedRecord = connect(mapStateToProps, mapDispatchToProps)(Record);
+export const ConnectedCheckerboard = connect(mapAllStateToProps, mapDispatchToProps)(Checkerboard);
+export const ConnectedRecord = connect(mapRecordStateToProps)(Record);

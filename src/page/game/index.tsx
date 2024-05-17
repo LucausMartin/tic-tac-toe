@@ -1,36 +1,47 @@
 import { Component } from 'react';
-import { GOMOKUCONFIG, TICTACTOECONFIG } from '../../constant';
-import { GameName } from '../../type';
+import { GOMOKU_CONFIG, TICTACTOE_CONFIG } from '../../constant';
 import { ConnectedCheckerboard } from '../../component';
+import { connect } from 'react-redux';
+import { RootState } from '../../store';
+import { Dispatch, bindActionCreators } from '@reduxjs/toolkit';
+import { changeToGomoku, changeToTicTacToe } from '../../store/slices/gameConfigSlice';
 import './index.css';
 
+interface GameProps {
+    config: RootState['configer']['config'];
+    changeToGomoku: typeof changeToGomoku;
+    changeToTicTacToe: typeof changeToTicTacToe;
+}
 /**
  * @description 游戏根组件
  */
-class Game extends Component {
-    constructor (props: {}) {
+class Game extends Component<GameProps> {
+    constructor (props: GameProps) {
         super(props);
     }
 
-    state = { gameConfig: TICTACTOECONFIG };
-
     changeGameConfig = () => {
-        this.setState({ gameConfig: this.state.gameConfig.name === GOMOKUCONFIG.name ? TICTACTOECONFIG : GOMOKUCONFIG });
+        const { name } = this.props.config;
+        const { changeToGomoku, changeToTicTacToe } = this.props;
+        if (name === GOMOKU_CONFIG.name) {
+            changeToTicTacToe();
+        } else {
+            changeToGomoku();
+        }
     };
 
     render () {
-        const { gameConfig } = this.state;
         return (
             <div className='game-container'>
-                <GameButton gameType={this.state.gameConfig.name} onClick={this.changeGameConfig}/>
-                <ConnectedCheckerboard gameConfig={gameConfig} />
+                <ConnectedGameButton onClick={this.changeGameConfig}/>
+                <ConnectedCheckerboard />
             </div>
         );
     }
 }
 
 interface GameButtonProps {
-    gameType: GameName;
+    config: RootState['configer']['config'];
     onClick: () => void;
 }
 /**
@@ -44,16 +55,38 @@ class GameButton extends Component<GameButtonProps> {
     }
 
     render () {
+        const { name } = this.props.config;
+        const { onClick } = this.props;
         return (
             <div className='game-button-container'>
-                {GOMOKUCONFIG.name}
-                <div className={this.props.gameType === GOMOKUCONFIG.name ? 'game-button-gom' : 'game-button-tic'} onClick={this.props.onClick}>
-                    <div className={this.props.gameType === GOMOKUCONFIG.name ? 'game-button-ball-left' : 'game-button-ball-right'}></div>
+                {GOMOKU_CONFIG.name}
+                <div className={name === GOMOKU_CONFIG.name ? 'game-button-gom' : 'game-button-tic'} onClick={onClick}>
+                    <div className={name === GOMOKU_CONFIG.name ? 'game-button-ball-left' : 'game-button-ball-right'}></div>
                 </div>
-                {TICTACTOECONFIG.name}
+                {TICTACTOE_CONFIG.name}
             </div>
         );
     }
 }
 
-export { Game };
+
+/**
+ *
+ * @param state Redux 集中管理的状态
+ * @returns 返回游戏配置状态
+ */
+const mapStateToProps = (state: RootState) => ({ config: state.configer.config });
+
+/**
+ *
+ * @param dispatch Redux store 的 dispatch
+ * @returns 返回 changeToGomoku 和 changeToTicTacToe 函数
+ */
+const mapDispatchToProps = (dispatch: Dispatch) =>
+    bindActionCreators(
+        { changeToGomoku, changeToTicTacToe },
+        dispatch
+    );
+
+export const ConnectedGame = connect(mapStateToProps, mapDispatchToProps)(Game);
+export const ConnectedGameButton = connect(mapStateToProps)(GameButton);

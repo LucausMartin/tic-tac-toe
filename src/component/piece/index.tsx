@@ -1,10 +1,12 @@
 import { PureComponent } from 'react';
-import { AllGameChessmanType, GameName, GameChessman } from '../../type';
+import { AllGameChessmanType, GameName, GameChessman, GameConfig } from '../../type';
+import { connect } from 'react-redux';
+import { RootState } from '../../store';
 import './index.css';
 
 interface PieceProps {
     chessman: AllGameChessmanType;
-    gameType: GameName;
+    config: GameConfig;
     rowIndex: number;
     colIndex: number;
     onClick: (location: [number, number]) => void;
@@ -21,11 +23,12 @@ interface PieceProps {
  */
 class Piece extends PureComponent<PieceProps> {
     render () {
-        const { chessman, gameType, rowIndex, colIndex, onClick } = this.props;
+        const { chessman, rowIndex, colIndex, onClick } = this.props;
+        const { name } = this.props.config;
         return (
             <div className='checkerboard-col'>
                 {
-                    gameType === GameName.TICTACTOE
+                    name === GameName.TICTACTOE
                         ? <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
                             {chessman}
                         </div>
@@ -42,4 +45,11 @@ class Piece extends PureComponent<PieceProps> {
     }
 }
 
-export { Piece };
+/**
+ *
+ * @param state Redux 集中管理的状态
+ * @returns 返回游戏配置状态
+ */
+const mapStateToProps = (state: RootState) => ({ config: state.configer.config });
+
+export const ConnectedPiece = connect(mapStateToProps)(Piece);

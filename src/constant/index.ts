@@ -3,7 +3,7 @@ import { GameConfig, ChessmanType, GameName } from '../type';
 /**
  * 井字棋配置
  */
-export const TICTACTOECONFIG: GameConfig = {
+export const TICTACTOE_CONFIG: GameConfig = {
     name: GameName.TICTACTOE,
     size: 3,
     winLength: 3,
@@ -13,7 +13,7 @@ export const TICTACTOECONFIG: GameConfig = {
 /**
  * 五子棋配置
  */
-export const GOMOKUCONFIG: GameConfig = {
+export const GOMOKU_CONFIG: GameConfig = {
     name: GameName.GOMOKU,
     size: 15,
     winLength: 5,
