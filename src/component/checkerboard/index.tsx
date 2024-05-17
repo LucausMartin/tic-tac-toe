@@ -1,52 +1,40 @@
 import { Component, PureComponent } from 'react';
-import { GameName, GameChessman } from '../../type';
+import { GameName, GameChessman, GameConfig } from '../../type';
 import { Piece } from '../piece';
 import { judge } from '../../tool';
-import { RootState } from '../../stroe';
+import { RootState } from '../../store';
 import { connect } from 'react-redux';
 import { Dispatch, bindActionCreators } from '@reduxjs/toolkit';
-import { addRecord } from '../../stroe/slices/recordSlice';
+import { addRecord, initialRecord } from '../../store/slices/recordSlice';
 import './index.css';
 
 interface CheckerboardProps {
-    size: number;
-    winLength: number;
-    gameType: GameName;
+    gameConfig: GameConfig;
     addRecord: typeof addRecord;
+    initialRecord: typeof initialRecord;
     record: RootState['record']['value'];
 }
 
 interface CheckerboardState {
     checkerboard: GameChessman[][] | null;
     player: GameChessman;
-    winner: GameChessman;
+    winner: GameChessman | 'none';
     recordIndex: number;
-    noOneWin: boolean;
 }
 
 class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     constructor (props: CheckerboardProps) {
         super(props);
-        const { size } = props;
-        const newCheckerboard = new Array(size);
-        for (let item = 0; item < size; item++) {
-            newCheckerboard[item] = new Array(size).fill(GameChessman.Empty);
-        }
+        const { size } = props.gameConfig;
+        const newCheckerboard = new Array(size).fill(null)
+            .map(() => new Array(size).fill(GameChessman.Empty));
         this.state = {
             checkerboard: newCheckerboard,
             player: GameChessman.X,
             winner: GameChessman.Empty,
             recordIndex: 0,
-            noOneWin: false,
         };
-        this.props.addRecord({
-            recordIndex: -1,
-            chessState: {
-                chessState: newCheckerboard,
-                player: GameChessman.X,
-                result: GameChessman.Empty,
-            },
-        });
+        this.props.initialRecord({ checkerboard: newCheckerboard });
     }
 
     /**
@@ -54,7 +42,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
      */
     componentDidUpdate (prevProps: Readonly<CheckerboardProps>): void {
         // 切换游戏模式重置棋盘状态
-        if (prevProps.gameType !== this.props.gameType) {
+        if (prevProps.gameConfig.name !== this.props.gameConfig.name) {
             this.clearCheckerboard();
         }
     }
@@ -71,20 +59,11 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
             noOneWin: false,
         };
         this.setState(initialState);
-        const { size } = this.props;
-        const newCheckerboard = new Array(size);
-        for (let item = 0; item < size; item++) {
-            newCheckerboard[item] = new Array(size).fill(GameChessman.Empty);
-        }
+        const { size } = this.props.gameConfig;
+        const newCheckerboard = new Array(size).fill(null)
+            .map(() => new Array(size).fill(GameChessman.Empty));
         this.setState({ checkerboard: newCheckerboard });
-        this.props.addRecord({
-            recordIndex: -1,
-            chessState: {
-                chessState: newCheckerboard,
-                player: GameChessman.X,
-                result: GameChessman.Empty,
-            },
-        });
+        this.props.initialRecord({ checkerboard: newCheckerboard });
     }
 
     /**
@@ -95,7 +74,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     dropPiece = (location: [number, number]) => {
         const { checkerboard, player, winner } = this.state;
         const { record } = this.props;
-        const { size, winLength } = this.props;
+        const { size, winLength } = this.props.gameConfig;
 
         // 如果已经有胜者或者棋盘不存在不允许落子
         if (winner !== GameChessman.Empty || !checkerboard) return;
@@ -112,14 +91,14 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         this.setState({ player: player === GameChessman.X ? GameChessman.O : GameChessman.X });
 
         // 判断胜者并记录胜利状态
-        let result: GameChessman | 'draw' | '' = '';
+        let result: GameChessman | 'draw' = GameChessman.Empty;
         const winnerTemp = judge(location, winLength, newCheckerboard);
         if (winnerTemp !== null) {
             this.setState({ winner: winnerTemp });
             result = winnerTemp;
         } else {
             if (record && record.length === size * size) {
-                this.setState({ noOneWin: true });
+                this.setState({ winner: 'none' });
                 result = 'draw';
             }
         }
@@ -145,7 +124,6 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         const { record } = this.props;
         this.setState({ recordIndex });
         // 先重置棋盘胜利状态
-        this.setState({ noOneWin: false });
         this.setState({ winner: GameChessman.Empty });
 
         // 更新棋盘状态并根据记录更新胜利状态
@@ -153,7 +131,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
             this.setState({ checkerboard: record[recordIndex].chessState });
             this.setState({ player: record[recordIndex].player });
             if (record[recordIndex].result === 'draw') {
-                this.setState({ noOneWin: true });
+                this.setState({ winner: 'none' });
             } else if (record[recordIndex].result !== 'draw' && record[recordIndex].result !== GameChessman.Empty) {
                 this.setState({ winner: record[recordIndex].result as GameChessman });
             }
@@ -161,19 +139,21 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     }
 
     render () {
-        const { size, gameType } = this.props;
-        const { checkerboard, player, winner, noOneWin } = this.state;
+        const { size, name } = this.props.gameConfig;
+        const { checkerboard, player, winner } = this.state;
 
         return (
             <div className='checkerboard-container'>
                 <div className='checkerboard-chess-container'>
-                    <div className='checkerboard-chess-no-one-win'>{noOneWin && 'draw'}</div>
                     <div className='checkerboard-chess-info'>
-                        <span>
-                        Winner: {gameType === GameName.TICTACTOE ? winner
-                                : <>{winner === GameChessman.Empty ? ''
-                                    : <>{winner === GameChessman.X ? 'Black' : 'White'}</>}</>}
-                        </span>
+                        {name !== GameName.GOMOKU && <span>
+                        Winner: {winner}
+                        </span>}
+                        {name === GameName.GOMOKU && <span>
+                        Winner: {
+                                winner === GameChessman.X ? 'Black' : <>{winner === GameChessman.O ? 'White' : winner}</>
+                            }
+                        </span>}
                         <span>{player} Please</span>
                     </div>
                     {checkerboard &&
@@ -188,7 +168,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
                                               key={colIndex}
                                               rowIndex={rowIndex}
                                               colIndex={colIndex}
-                                              gameType={gameType}
+                                              gameType={name}
                                               chessman={checkerboard.length === size ? checkerboard[rowIndex][colIndex] : GameChessman.Empty}
                                               onClick={this.dropPiece}
                                           />
@@ -223,7 +203,6 @@ class Record extends PureComponent<RecordProps> {
     }
 
     render () {
-        console.warn('record render');
         return (
             <div className='record-container'>
                 {
@@ -254,7 +233,7 @@ const mapStateToProps = (state: RootState) => ({ record: state.record.value });
  */
 const mapDispatchToProps = (dispatch: Dispatch) =>
     bindActionCreators(
-        { addRecord },
+        { addRecord, initialRecord },
         dispatch
     );
 

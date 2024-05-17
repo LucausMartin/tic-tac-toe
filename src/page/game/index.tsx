@@ -19,10 +19,11 @@ class Game extends Component {
     };
 
     render () {
+        const { gameConfig } = this.state;
         return (
             <div className='game-container'>
                 <GameButton gameType={this.state.gameConfig.name} onClick={this.changeGameConfig}/>
-                <ConnectedCheckerboard size={this.state.gameConfig.size} winLength={this.state.gameConfig.winLength} gameType={this.state.gameConfig.name} />
+                <ConnectedCheckerboard gameConfig={gameConfig} />
             </div>
         );
     }

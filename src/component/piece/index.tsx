@@ -21,7 +21,6 @@ interface PieceProps {
  */
 class Piece extends PureComponent<PieceProps> {
     render () {
-        console.warn('Piece render');
         const { chessman, gameType, rowIndex, colIndex, onClick } = this.props;
         return (
             <div className='checkerboard-col'>
