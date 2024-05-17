@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { GOMOKUCONFIG, TICTACTOECONFIG } from '../../constant';
+import { GOMOKU_CONFIG, TICTACTOE_CONFIG } from '../../constant';
 import { GameName } from '../../type';
 import { Checkerboard } from '../../component';
 import './index.css';
@@ -9,19 +9,19 @@ import './index.css';
  * @description 游戏根组件
  */
 const Game: FC = () => {
-    const [gameConfig, setGameConfig] = useState(TICTACTOECONFIG);
+    const [gameConfig, setGameConfig] = useState(TICTACTOE_CONFIG);
 
     /**
      * @description 切换游戏配置
      */
     const changeGameConfig = () => {
-        setGameConfig(gameConfig.name === GOMOKUCONFIG.name ? TICTACTOECONFIG : GOMOKUCONFIG);
+        setGameConfig(gameConfig.name === GOMOKU_CONFIG.name ? TICTACTOE_CONFIG : GOMOKU_CONFIG);
     };
 
     return (
         <div className='game-container'>
             <GameButton gameType={gameConfig.name} onClick={changeGameConfig}/>
-            <Checkerboard size={gameConfig.size} winLength={gameConfig.winLength} gameType={gameConfig.name}/>
+            <Checkerboard gameConfig={gameConfig}/>
         </div>
     );
 };
@@ -40,11 +40,11 @@ interface GameButtonProps {
 const GameButton: FC<GameButtonProps> = ({ gameType, onClick }) => {
     return (
         <div className="game-button-container">
-            {GOMOKUCONFIG.name}
-            <div className={gameType === GOMOKUCONFIG.name ? 'game-button-gom' : 'game-button-tic'} onClick={onClick}>
-                <div className={gameType === GOMOKUCONFIG.name ? 'game-button-ball-left' : 'game-button-ball-right'}></div>
+            {GOMOKU_CONFIG.name}
+            <div className={gameType === GOMOKU_CONFIG.name ? 'game-button-gom' : 'game-button-tic'} onClick={onClick}>
+                <div className={gameType === GOMOKU_CONFIG.name ? 'game-button-ball-left' : 'game-button-ball-right'}></div>
             </div>
-            {TICTACTOECONFIG.name}
+            {TICTACTOE_CONFIG.name}
         </div>
     );
 };

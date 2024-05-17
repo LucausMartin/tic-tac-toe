@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import type { RootState } from '../index';
-import { RecordType } from '../../type';
+import { GameChessman, RecordType, AllGameChessmanType } from '../../type';
 
 interface RecordState {
     value: RecordType[] | null;
@@ -24,11 +24,20 @@ export const recordSlice = createSlice({
                 state.value = [action.payload.chessState];
             }
         },
+        initialRecord: (state, action: PayloadAction<{
+            checkerboard: AllGameChessmanType[][];
+        }>) => {
+            state.value = [{
+                chessState: action.payload.checkerboard,
+                player: GameChessman.X,
+                result: GameChessman.Empty,
+            }];
+        },
     },
 });
 
 // 导出自动生成的 action 生成函数
-export const { addRecord } = recordSlice.actions;
+export const { addRecord, initialRecord } = recordSlice.actions;
 
 // 选择器等其他代码可以使用导入的 `RootState` 类型
 /**

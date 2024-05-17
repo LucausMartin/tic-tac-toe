@@ -1,24 +1,20 @@
 import { FC, useState, useEffect, useCallback, memo } from 'react';
-import { AllGameChessmanType, GameName, GameChessman } from '../../type';
+import { AllGameChessmanType, GameChessman, GameConfig, GameName } from '../../type';
 import { Piece } from '../piece';
 import { judge } from '../../tool';
 import { useDispatch, useSelector } from 'react-redux';
-import { addRecord, selectRecord } from '../../stroe/slices/recordSlice';
+import { addRecord, selectRecord, initialRecord } from '../../stroe/slices/recordSlice';
 import './index.css';
 
 interface CheckerboardProps {
-    size: number;
-    winLength: number;
-    gameType: GameName;
+    gameConfig: GameConfig;
 }
 /**
  *
- * @param size 棋盘大小
- * @param winLength 胜利条件（连子个数）
- * @param gameType 游戏类型
+ * @param gameConfig 游戏配置
  * @description 棋盘组件
  */
-const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
+const Checkerboard: FC<CheckerboardProps> = ({ gameConfig }) => {
     const dispatch = useDispatch();
     // 落子及胜者记录
     const record = useSelector(selectRecord);
@@ -27,31 +23,21 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
     // 当前落子玩家
     const [player, setPlayer] = useState<AllGameChessmanType>(GameChessman.X);
     // 胜者
-    const [winner, setWinner] = useState<GameChessman>(GameChessman.Empty);
+    const [winner, setWinner] = useState<GameChessman | 'none'>(GameChessman.Empty);
     // 棋盘状态所处第几条记录
     const [recordIndex, setRecordIndex] = useState<number>(0);
-    // 是否平局
-    const [noOneWin, setNoOneWin] = useState<boolean>(false);
     // 新落子坐标
     const [newPieceLocation, setNewPieceLocation] = useState<[number, number] | null>(null);
 
     // 初始化棋盘
     useEffect(() => {
-        const newCheckerboard = new Array(size);
-        for (let item = 0; item < size; item++) {
-            newCheckerboard[item] = new Array(size).fill(GameChessman.Empty);
-        }
+        const newCheckerboard = createTwoDimensionalArray(gameConfig.size);
         setCheckerboard(newCheckerboard);
         setPlayer(GameChessman.X);
-        dispatch(addRecord({
-            recordIndex: -1,
-            chessState: {
-                chessState: newCheckerboard,
-                player: GameChessman.X,
-                result: GameChessman.Empty,
-            },
-        }));
-    }, [size, winLength, gameType]);
+        dispatch(initialRecord({ checkerboard: newCheckerboard }));
+        setWinner(GameChessman.Empty);
+        setRecordIndex(0);
+    }, [gameConfig]);
 
     // 落子后的操作
     useEffect(() => {
@@ -80,15 +66,15 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
         setPlayer(player === GameChessman.X ? GameChessman.O : GameChessman.X);
 
         // 判断胜利并记录胜利情况
-        let result: GameChessman | 'draw' | '' = '';
-        const winnerTemp = judge(newPieceLocation, winLength, newCheckerboard);
+        let result: GameChessman | 'draw' = GameChessman.Empty;
+        const winnerTemp = judge(newPieceLocation, gameConfig.winLength, newCheckerboard);
         if (winnerTemp !== null) {
             setWinner(winnerTemp);
             result = winnerTemp;
         } else {
             // 平局判断
-            if (record && record.length === size * size) {
-                setNoOneWin(true);
+            if (record && record.length === gameConfig.size * gameConfig.size) {
+                setWinner('none');
                 result = 'draw';
             }
         }
@@ -119,13 +105,20 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
 
         // 赋值胜者
         if (record && record[recordIndex].result === 'draw') {
-            setNoOneWin(true);
+            setWinner('none');
         } else {
-            setNoOneWin(false);
             setWinner(record[recordIndex].result as GameChessman);
         }
     }, [recordIndex]);
 
+    /**
+     * @description 创建二维数组
+     * @returns 二维数组
+     */
+    const createTwoDimensionalArray: (size: number) => AllGameChessmanType[][] = useCallback((size: number) => {
+        return new Array(size).fill(null)
+            .map(() => new Array(size).fill(GameChessman.Empty));
+    }, [gameConfig]);
 
     /**
      *
@@ -136,6 +129,10 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
         setNewPieceLocation(location);
     }, []);
 
+    /**
+     * @description 设置棋盘状态所处第几条记录
+     * @param index 棋盘状态所处第几条记录
+     */
     const updateRecordIndex = useCallback((index: number) => {
         setRecordIndex(index);
     }, []);
@@ -143,30 +140,32 @@ const Checkerboard: FC<CheckerboardProps> = ({ size, winLength, gameType }) => {
     return (
         <div className='checkerboard-container'>
             <div className='checkerboard-chess-container'>
-                <div className='checkerboard-chess-no-one-win'>{noOneWin && 'draw'}</div>
                 <div className='checkerboard-chess-info'>
-                    <span>
-                        Winner: {gameType === GameName.TICTACTOE ? winner
-                            : <>{winner === GameChessman.Empty ? ''
-                                : <>{winner === GameChessman.X ? 'Black' : 'White'}</>}</>}
-                    </span>
+                    {gameConfig.name !== GameName.GOMOKU && <span>
+                        Winner: {winner}
+                    </span>}
+                    {gameConfig.name === GameName.GOMOKU && <span>
+                        Winner: {
+                            winner === GameChessman.X ? 'Black' : <>{winner === GameChessman.O ? 'White' : winner}</>
+                        }
+                    </span>}
                     <span>
                         {player} Please
                     </span>
                 </div>
                 {
-                    checkerboard && Array(size).fill(null)
+                    checkerboard && Array(gameConfig.size).fill(null)
                         .map((__, rowIndex) => (
                             <div key={rowIndex} className='checkerboard-row'>
                                 {
-                                    Array(size).fill(null)
+                                    Array(gameConfig.size).fill(null)
                                         .map((__, colIndex) => (
                                             <Piece
                                                 key={colIndex}
                                                 rowIndex={rowIndex}
                                                 colIndex={colIndex}
-                                                gameType={gameType}
-                                                chessman={checkerboard.length === size ? checkerboard[rowIndex][colIndex] : GameChessman.Empty}
+                                                gameType={gameConfig.name}
+                                                chessman={checkerboard.length === gameConfig.size ? checkerboard[rowIndex][colIndex] : GameChessman.Empty}
                                                 onClick={dropPiece}
                                             />
                                         ))
@@ -195,8 +194,6 @@ interface RecordProps {
  * @description 落子及胜者记录展示组件
  */
 const Record: FC<RecordProps> = memo(({ setRecordIndex }) => {
-    console.warn('Record render');
-
     // 落子及胜者记录
     const record = useSelector(selectRecord);
     return (

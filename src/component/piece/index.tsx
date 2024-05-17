@@ -20,7 +20,6 @@ interface PieceProps {
  * @description 棋子组件
  */
 const Piece: FC<PieceProps> = memo(({ chessman, gameType, rowIndex, colIndex, onClick }) => {
-    console.warn('Piece render');
     return (
         <div className='checkerboard-col'>
             {
