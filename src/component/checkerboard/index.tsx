@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Dispatch, bindActionCreators } from '@reduxjs/toolkit';
 import { addRecord, initialRecord } from '../../store/slices/recordSlice';
 import { GameName, GameChessman, GameConfig, FirstPlayer, GameMode } from '../../type';
-import { judge } from '../../tool';
+import { judge, findBestLocation } from '../../tool';
 import { RootState } from '../../store';
 import { ConnectedPiece, ConnectedRecord, ConnectedGameModeChoose } from '../index';
 import './index.css';
@@ -51,6 +51,11 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         // 切换游戏模式重置棋盘状态
         if (prevProps.config.name !== this.props.config.name) {
             this.clearCheckerboard();
+        }
+        if (prevProps.config.firstPlayer !== this.props.config.firstPlayer) {
+            if (this.props.config.firstPlayer === FirstPlayer.AI) {
+                this.aiDropPiece(this.state.checkerboard as GameChessman[][], GameChessman.X);
+            }
         }
     }
 
@@ -120,7 +125,22 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
             },
         });
         this.setState({ recordIndex: recordIndex + 1 });
+        if (this.props.config.gameMode === GameMode.PVE) {
+            this.aiDropPiece(newCheckerboard, player === GameChessman.X ? GameChessman.O : GameChessman.X);
+        }
     };
+
+    /**
+     * @description AI 落子
+     */
+    aiDropPiece = (newCheckerboard: GameChessman[][], player: GameChessman) => {
+        const location = findBestLocation(newCheckerboard, player, this.props.config.winLength, this.props.config.size);
+        const Checkerboard = newCheckerboard.map((row, rowIndex) =>
+            row.map((col, colIndex) =>
+                (rowIndex === location[0] && colIndex === location[1] ? player : col)));
+        this.setState({ checkerboard: Checkerboard });
+        this.setState({ player: player === GameChessman.X ? GameChessman.O : GameChessman.X });
+    }
 
     /**
      *

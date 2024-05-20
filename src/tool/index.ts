@@ -76,3 +76,86 @@ const getmaxWinLength = (direction: DirectionType, checkerboardArr: GameChessman
         }
     });
 };
+/**
+ *
+ * @param checkerboardArr 棋盘状态
+ * @param deep 深度
+ * @param winLength 胜利条件（连子个数）
+ * @returns 评分
+ */
+const minimax = (checkerboardArr: GameChessman[][], deep: number, winLength: number, location: [number, number], chessman: GameChessman, size: number): number => {
+    // 深拷贝棋盘状态
+    const newCheckerboard = checkerboardArr.map((row) => row.map((col) => col));
+    // 判断胜者
+    const winner = judge(location, winLength, newCheckerboard);
+    if (winner !== null) {
+        if (winner === chessman) {
+            // console.log('X win', newCheckerboard);
+            return 1;
+        }
+        return -1;
+    }
+    if (deep === size * size) {
+        return 0;
+    }
+
+    if (deep % 2 === 0) {
+        let bestScore = -Infinity;
+        for (let row = 0; row < newCheckerboard.length; row++) {
+            for (let col = 0; col < newCheckerboard[row].length; col++) {
+                if (newCheckerboard[row][col] === GameChessman.Empty) {
+                    newCheckerboard[row][col] = chessman;
+                    const score = minimax(newCheckerboard, deep + 1, winLength, [row, col], chessman === GameChessman.X ? GameChessman.O : GameChessman.X, size);
+                    newCheckerboard[row][col] = GameChessman.Empty;
+                    if (score > bestScore) {
+                        bestScore = score;
+                    }
+                }
+            }
+        }
+        return bestScore;
+    }
+    let bestScore = +Infinity;
+    for (let row = 0; row < newCheckerboard.length; row++) {
+        for (let col = 0; col < newCheckerboard[row].length; col++) {
+            if (newCheckerboard[row][col] === GameChessman.Empty) {
+                newCheckerboard[row][col] = chessman;
+                const score = minimax(newCheckerboard, deep + 1, winLength, [row, col], chessman === GameChessman.X ? GameChessman.O : GameChessman.X, size);
+                newCheckerboard[row][col] = GameChessman.Empty;
+                if (score < bestScore) {
+                    bestScore = score;
+                }
+            }
+        }
+    }
+    return bestScore;
+};
+
+/**
+ *
+ * @param checkerboardArr 当前棋盘的状态
+ * @param player 当前玩家
+ * @returns 最佳落子位置
+ */
+export const findBestLocation = (checkerboardArr: GameChessman[][], chessman: GameChessman, winLength: number, size: number): [number, number] => {
+    // 深拷贝棋盘状态
+    const newCheckerboard = checkerboardArr.map((row) => row.map((col) => col));
+    // 遍历棋盘空位置落子
+    let bestScore = -Infinity;
+    let bestLocation: [number, number] = [-1, -1];
+    const deep = 0;
+    for (let row = 0; row < newCheckerboard.length; row++) {
+        for (let col = 0; col < newCheckerboard[row].length; col++) {
+            if (newCheckerboard[row][col] === GameChessman.Empty) {
+                newCheckerboard[row][col] = chessman;
+                const score = minimax(newCheckerboard, deep, winLength, [row, col], chessman === GameChessman.X ? GameChessman.O : GameChessman.X, size);
+                newCheckerboard[row][col] = GameChessman.Empty;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestLocation = [row, col];
+                }
+            }
+        }
+    }
+    return bestLocation;
+};
