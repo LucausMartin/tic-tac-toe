@@ -1,0 +1,19 @@
+.checkerboard-choose-first-button {
+    width: 50px;
+}
+
+.checkerboard-choose {
+    display: flex;
+    width: 100vw;
+    justify-content: center;
+    align-items: center;
+}
+
+.checkerboard-choose-first {
+    padding-top: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}

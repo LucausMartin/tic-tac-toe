@@ -15,8 +15,46 @@ export interface GameConfig {
      * 棋子类型
      */
     chessmanType: ChessmanType;
+    /**
+     * 游戏模式
+     */
+    gameMode: GameMode;
+    /**
+     * 先手
+     */
+    firstPlayer: FirstPlayer;
 }
 
+// 先手枚举
+export enum FirstPlayer {
+    /**
+     * 玩家1
+     */
+    AI = 'AI',
+    /**
+     * 玩家2
+     */
+    PLAYER = 'player',
+    /**
+     * 未选择
+     */
+    NONE = '',
+}
+
+export enum GameMode {
+    /**
+     * 人机对战
+     */
+    PVE = 'PVE',
+    /**
+     * 玩家对战
+     */
+    PVP = 'PVP',
+    /**
+     * 未选择
+     */
+    NONE = '',
+}
 
 export enum ChessmanType {
     /**

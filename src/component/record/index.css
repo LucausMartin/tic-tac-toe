@@ -1,0 +1,15 @@
+.record-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: rgb(202, 202, 202);
+    padding: 10px;
+    width: 150px;
+    height: 448px;
+    overflow-y: auto;
+}
+
+.record-button {
+    width: 100%;
+    cursor: pointer;
+}

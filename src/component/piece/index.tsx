@@ -9,7 +9,7 @@ interface PieceProps {
     config: GameConfig;
     rowIndex: number;
     colIndex: number;
-    onClick: (location: [number, number]) => void;
+    onClick: (location: [number, number], AIDrop: boolean) => void;
 }
 
 /**
@@ -29,10 +29,10 @@ class Piece extends PureComponent<PieceProps> {
             <div className='checkerboard-col'>
                 {
                     name === GameName.TICTACTOE
-                        ? <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
+                        ? <div className='piece-container' onClick={() => onClick([rowIndex, colIndex], false)}>
                             {chessman}
                         </div>
-                        : <div className='piece-container' onClick={() => onClick([rowIndex, colIndex])}>
+                        : <div className='piece-container' onClick={() => onClick([rowIndex, colIndex], false)}>
                             {
                                 chessman === GameChessman.Empty
                                     ? null

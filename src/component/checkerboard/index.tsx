@@ -1,11 +1,11 @@
-import { Component, PureComponent } from 'react';
-import { GameName, GameChessman, GameConfig } from '../../type';
-import { ConnectedPiece } from '../piece';
-import { judge } from '../../tool';
-import { RootState } from '../../store';
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch, bindActionCreators } from '@reduxjs/toolkit';
 import { addRecord, initialRecord } from '../../store/slices/recordSlice';
+import { GameName, GameChessman, GameConfig, FirstPlayer, GameMode } from '../../type';
+import { judge } from '../../tool';
+import { RootState } from '../../store';
+import { ConnectedPiece, ConnectedRecord, ConnectedGameModeChoose } from '../index';
 import './index.css';
 
 interface CheckerboardProps {
@@ -22,6 +22,13 @@ interface CheckerboardState {
     recordIndex: number;
 }
 
+/**
+ * @description 棋盘组件
+ * @param config 游戏配置
+ * @param record 记录
+ * @param addRecord 添加记录
+ * @param initialRecord 初始化记录
+ */
 class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     constructor (props: CheckerboardProps) {
         super(props);
@@ -51,18 +58,17 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
      * @description 重置棋盘状态
      */
     clearCheckerboard = () => {
+        const { size } = this.props.config;
+        const newCheckerboard = new Array(size).fill(null)
+            .map(() => new Array(size).fill(GameChessman.Empty));
         const initialState = {
-            checkerboard: null,
+            checkerboard: newCheckerboard,
             player: GameChessman.X,
             winner: GameChessman.Empty,
             recordIndex: 0,
             noOneWin: false,
         };
         this.setState(initialState);
-        const { size } = this.props.config;
-        const newCheckerboard = new Array(size).fill(null)
-            .map(() => new Array(size).fill(GameChessman.Empty));
-        this.setState({ checkerboard: newCheckerboard });
         this.props.initialRecord({ checkerboard: newCheckerboard });
     }
 
@@ -139,24 +145,27 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     }
 
     render () {
-        const { size, name } = this.props.config;
+        const { size, name, firstPlayer, gameMode } = this.props.config;
         const { checkerboard, player, winner } = this.state;
 
         return (
-            <div className='checkerboard-container'>
-                <div className='checkerboard-chess-container'>
-                    <div className='checkerboard-chess-info'>
-                        {name !== GameName.GOMOKU && <span>
+            <>
+                <ConnectedGameModeChoose />
+                {((firstPlayer !== FirstPlayer.NONE && gameMode !== GameMode.NONE) || gameMode === GameMode.PVP) &&
+                <div className='checkerboard-container'>
+                    <div className='checkerboard-chess-container'>
+                        <div className='checkerboard-chess-info'>
+                            {name !== GameName.GOMOKU && <span>
                         Winner: {winner}
-                        </span>}
-                        {name === GameName.GOMOKU && <span>
+                            </span>}
+                            {name === GameName.GOMOKU && <span>
                         Winner: {
-                                winner === GameChessman.X ? 'Black' : <>{winner === GameChessman.O ? 'White' : winner}</>
-                            }
-                        </span>}
-                        <span>{player} Please</span>
-                    </div>
-                    {checkerboard &&
+                                    winner === GameChessman.X ? 'Black' : <>{winner === GameChessman.O ? 'White' : winner}</>
+                                }
+                            </span>}
+                            <span>{player} Please</span>
+                        </div>
+                        {checkerboard &&
                       Array(size)
                           .fill(null)
                           .map((__, rowIndex) => (
@@ -174,49 +183,19 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
                                       ))}
                               </div>
                           ))}
-                </div>
-                {
-                    this.props.record &&
-                    <ConnectedRecord
-                        updateRecord={this.updateRecord}
-                    />
-                }
-            </div>
+                    </div>
+                    {
+                        this.props.record &&
+                        <ConnectedRecord
+                            updateRecord={this.updateRecord}
+                        />
+                    }
+                </div>}
+            </>
         );
     }
 }
 
-interface RecordProps {
-    record: RootState['recorder']['record'];
-    updateRecord: (recordIndex: number) => void;
-}
-/**
- *
- * @param record 落子及胜者记录
- * @param updateRecord 更新记录函数
- * @description 落子及胜者记录展示组件
- */
-class Record extends PureComponent<RecordProps> {
-    constructor (props: RecordProps) {
-        super(props);
-    }
-
-    render () {
-        return (
-            <div className='record-container'>
-                {
-                    this.props.record && this.props.record.map((__, index) => (
-                        <div key={index}>
-                            <button className='record-button' onClick={
-                                () => this.props.updateRecord(index)
-                            }>move to {index}</button>
-                        </div>
-                    ))
-                }
-            </div>
-        );
-    }
-}
 
 /**
  *
@@ -227,22 +206,14 @@ const mapAllStateToProps = (state: RootState) => ({ record: state.recorder.recor
 
 /**
  *
- * @param state Redux 集中管理的状态
- * @returns 返回记录状态
- */
-const mapRecordStateToProps = (state: RootState) => ({ record: state.recorder.record });
-
-/**
- *
  * @param dispatch Redux store 的 dispatch
- * @returns 返回 addRecord 和 initialRecord 函数
+ * @returns 返回添加和初始化记录的函数
  */
-const mapDispatchToProps = (dispatch: Dispatch) =>
+const mapRecordDispatchToProps = (dispatch: Dispatch) =>
     bindActionCreators(
         { addRecord, initialRecord },
         dispatch
     );
 
 
-export const ConnectedCheckerboard = connect(mapAllStateToProps, mapDispatchToProps)(Checkerboard);
-export const ConnectedRecord = connect(mapRecordStateToProps)(Record);
+export const ConnectedCheckerboard = connect(mapAllStateToProps, mapRecordDispatchToProps)(Checkerboard);

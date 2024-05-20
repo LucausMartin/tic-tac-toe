@@ -1,4 +1,4 @@
-import { AllGameChessmanType, GameChessman } from '../type';
+import { GameChessman } from '../type';
 
 interface DirectionType {
     directionArr: [number, number][];
@@ -13,7 +13,7 @@ interface DirectionType {
  * @param checkerboardArr 棋盘状态
  * @returns 胜利方或者平局（true代表平局）
  */
-export const judge = (location: [number, number], winLength: number, checkerboardArr: AllGameChessmanType[][]): GameChessman | null => {
+export const judge = (location: [number, number], winLength: number, checkerboardArr: GameChessman[][]): GameChessman | null => {
     let winner = null;
     const directionArr: DirectionType[] = [
         {
@@ -57,7 +57,7 @@ export const judge = (location: [number, number], winLength: number, checkerboar
  * @param winLength 胜利条件（连子个数）
  * @returns 最大连子个数
  */
-const getmaxWinLength = (direction: DirectionType, checkerboardArr: AllGameChessmanType[][], location: [number, number], winLength: number): void => {
+const getmaxWinLength = (direction: DirectionType, checkerboardArr: GameChessman[][], location: [number, number], winLength: number): void => {
     const [row, col] = location;
     direction.directionArr.forEach((item) => {
         let flag = 0;
