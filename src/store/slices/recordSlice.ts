@@ -16,20 +16,12 @@ export const recordSlice = createSlice({
         addRecord: (state, action: PayloadAction<{
             recordIndex: number;
             chessState: RecordType;
-        }[]>) => {
-            // if (state.record) {
-            //     state.record.splice(action.payload.recordIndex + 1, state.record.length - action.payload.recordIndex);
-            //     state.record.push(action.payload.chessState);
-            // } else {
-            //     state.record = [action.payload.chessState];
-            // }
+        }>) => {
             if (state.record) {
-                action.payload.forEach((item) => {
-                    state.record?.splice(item.recordIndex + 1, state.record.length - item.recordIndex);
-                    state.record?.push(item.chessState);
-                });
+                state.record.splice(action.payload.recordIndex + 1, state.record.length - action.payload.recordIndex);
+                state.record.push(action.payload.chessState);
             } else {
-                state.record = action.payload.map((item) => item.chessState);
+                state.record = [action.payload.chessState];
             }
         },
         initialRecord: (state, action: PayloadAction<{

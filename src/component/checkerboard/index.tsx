@@ -113,14 +113,14 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
 
         // 记录落子和胜利状态并更新记录索引
         const { recordIndex } = this.state;
-        this.props.addRecord([{
+        this.props.addRecord({
             recordIndex,
             chessState: {
                 chessState: newCheckerboard,
                 player: player === GameChessman.X ? GameChessman.O : GameChessman.X,
                 result,
             },
-        }]);
+        });
 
         this.setState({
             checkerboard: newCheckerboard,
@@ -128,26 +128,9 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
             recordIndex: recordIndex + 1,
             winner: result,
         }, () => {
-            const { firstPlayer } = this.props.config;
-            const { player } = this.state;
-            if (firstPlayer === FirstPlayer.AI && player === GameChessman.X) {
-                this.aiDropPiece(newCheckerboard);
-            }
-            if (firstPlayer === FirstPlayer.PLAYER && player === GameChessman.O) {
-                this.aiDropPiece(newCheckerboard);
-            }
+            this.isAIDropPiece(newCheckerboard);
         });
     };
-
-    /**
-     * @description AI 落子
-     */
-    aiDropPiece = (newCheckerboard: GameChessman[][]) => {
-        const { config } = this.props;
-        const { player } = this.state;
-        const location = findBestLocation(newCheckerboard, player, config);
-        this.dropPiece(location);
-    }
 
     /**
      *
@@ -165,15 +148,32 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
                 result = record[recordIndex].result as GameChessman;
             }
             this.setState({ checkerboard: record[recordIndex].chessState, player: record[recordIndex].player, winner: result, recordIndex }, () => {
-                const { firstPlayer } = this.props.config;
-                const { player } = this.state;
-                if (firstPlayer === FirstPlayer.AI && player === GameChessman.X) {
-                    this.aiDropPiece(record[recordIndex].chessState);
-                }
-                if (firstPlayer === FirstPlayer.PLAYER && player === GameChessman.O) {
-                    this.aiDropPiece(record[recordIndex].chessState);
-                }
+                this.isAIDropPiece(record[recordIndex].chessState);
             });
+        }
+    }
+
+    /**
+     * @description AI 落子
+     */
+    aiDropPiece = (newCheckerboard: GameChessman[][]) => {
+        const { config } = this.props;
+        const { player } = this.state;
+        const location = findBestLocation(newCheckerboard, player, config);
+        this.dropPiece(location);
+    }
+
+    /**
+     * @description 判断是否轮到 AI 落子
+     */
+    isAIDropPiece = (newCheckerboard: GameChessman[][]) => {
+        const { firstPlayer } = this.props.config;
+        const { player } = this.state;
+        if (firstPlayer === FirstPlayer.AI && player === GameChessman.X) {
+            this.aiDropPiece(newCheckerboard);
+        }
+        if (firstPlayer === FirstPlayer.PLAYER && player === GameChessman.O) {
+            this.aiDropPiece(newCheckerboard);
         }
     }
 
