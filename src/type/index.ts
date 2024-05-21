@@ -12,10 +12,6 @@ export interface GameConfig {
      */
     winLength: number;
     /**
-     * 棋子类型
-     */
-    chessmanType: ChessmanType;
-    /**
      * 游戏模式
      */
     gameMode: GameMode;
@@ -23,6 +19,25 @@ export interface GameConfig {
      * 先手
      */
     firstPlayer: FirstPlayer;
+    /**
+     * 初始化棋盘
+     */
+    checkerboard: GameChessman[][];
+    /**
+     * 胜利者展示信息
+     */
+    win: {
+        [key: string]: string;
+    };
+    /**
+     * 棋子展示信息
+     */
+    chessmanStyle: {
+        [key: string]: {
+            name: string;
+            chessmanClass: string;
+        };
+    };
 }
 
 // 先手枚举
@@ -41,6 +56,7 @@ export enum FirstPlayer {
     NONE = '',
 }
 
+// 游戏模式枚举
 export enum GameMode {
     /**
      * 人机对战
@@ -56,19 +72,7 @@ export enum GameMode {
     NONE = '',
 }
 
-export enum ChessmanType {
-    /**
-     * 井字棋
-     */
-    XO = 'XO',
-    /**
-     * 五子棋
-     */
-    BW = 'blackWhite',
-}
-
-export type AllGameChessmanType = GameChessman.X | GameChessman.O | GameChessman.Empty;
-
+// 棋子枚举
 export enum GameChessman {
     /**
      * Player1 棋子
@@ -96,7 +100,7 @@ export enum GameName {
 }
 
 export interface RecordType {
-    chessState: AllGameChessmanType[][];
+    chessState: GameChessman[][];
     player: GameChessman;
     result: GameChessman | 'none' | '';
 }

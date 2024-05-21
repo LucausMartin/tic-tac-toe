@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import type { RootState } from '../index';
-import { GameChessman, RecordType, AllGameChessmanType } from '../../type';
+import { GameChessman, RecordType } from '../../type';
 
 interface RecordState {
     record: RecordType[] | null;
@@ -25,7 +25,7 @@ export const recordSlice = createSlice({
             }
         },
         initialRecord: (state, action: PayloadAction<{
-            checkerboard: AllGameChessmanType[][];
+            checkerboard: GameChessman[][];
         }>) => {
             state.record = [{
                 chessState: action.payload.checkerboard,

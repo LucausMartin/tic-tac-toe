@@ -1,17 +1,15 @@
 import { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch, bindActionCreators } from '@reduxjs/toolkit';
-import { changeGameModeToPVP, changeGameModeToPVE, changeFirstPlayerToPlayer, changeFirstPlayerToAI } from '../../store/slices/gameConfigSlice';
+import { changeGameMode, changeFirst } from '../../store/slices/gameConfigSlice';
 import { GameConfig, FirstPlayer, GameMode } from '../../type';
 import { RootState } from '../../store';
 import './index.css';
 
 interface GameModeProps {
     config: GameConfig;
-    changeGameModeToPVP: typeof changeGameModeToPVP;
-    changeGameModeToPVE: typeof changeGameModeToPVE;
-    changeFirstPlayerToPlayer: typeof changeFirstPlayerToPlayer;
-    changeFirstPlayerToAI: typeof changeFirstPlayerToAI;
+    changeGameMode: typeof changeGameMode;
+    changeFirst: typeof changeFirst;
 }
 
 /**
@@ -28,24 +26,9 @@ class GameModeChoose extends PureComponent<GameModeProps> {
         super(props);
     }
 
-    chooseGameMode = (gameMode: GameMode) => {
-        if (gameMode === GameMode.PVP) {
-            this.props.changeGameModeToPVP();
-        } else {
-            this.props.changeGameModeToPVE();
-        }
-    }
-
-    chooseFirstPlayer = (firstPlayer: FirstPlayer) => {
-        if (firstPlayer === FirstPlayer.PLAYER) {
-            this.props.changeFirstPlayerToPlayer();
-        } else {
-            this.props.changeFirstPlayerToAI();
-        }
-    }
-
     render () {
         const { gameMode, firstPlayer } = this.props.config;
+        const { changeGameMode, changeFirst } = this.props;
         return (
             <>
                 {gameMode === GameMode.NONE &&
@@ -53,10 +36,10 @@ class GameModeChoose extends PureComponent<GameModeProps> {
                     <span className='checkerboard-choose'>choose game mode</span>
                     <div className='checkerboard-choose-first'>
                         <button className='checkerboard-choose-first-button' onClick={
-                            () => this.chooseGameMode(GameMode.PVP)
+                            () => changeGameMode(GameMode.PVP)
                         }>PVP</button>
                         <button className='checkerboard-choose-first-button' onClick={
-                            () => this.chooseGameMode(GameMode.PVE)
+                            () => changeGameMode(GameMode.PVE)
                         }>PVE</button>
                     </div>
                 </div>}
@@ -65,10 +48,10 @@ class GameModeChoose extends PureComponent<GameModeProps> {
                     <span className='checkerboard-choose'>choose first player</span>
                     <div className='checkerboard-choose-first'>
                         <button className='checkerboard-choose-first-button' onClick={
-                            () => this.chooseFirstPlayer(FirstPlayer.PLAYER)
+                            () => changeFirst(FirstPlayer.PLAYER)
                         }>player</button>
                         <button className='checkerboard-choose-first-button' onClick={
-                            () => this.chooseFirstPlayer(FirstPlayer.AI)
+                            () => changeFirst(FirstPlayer.AI)
                         }>AI</button>
                     </div>
                 </div>}
@@ -91,7 +74,7 @@ const mapConfigStateToProps = (state: RootState) => ({ config: state.configer.co
  */
 const mapGameModeChooseDispatchToProps = (dispatch: Dispatch) =>
     bindActionCreators(
-        { changeGameModeToPVP, changeGameModeToPVE, changeFirstPlayerToPlayer, changeFirstPlayerToAI },
+        { changeGameMode, changeFirst },
         dispatch
     );
 

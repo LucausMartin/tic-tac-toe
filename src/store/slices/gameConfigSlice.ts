@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { RootState } from '../index';
-import { GameConfig, GameMode, FirstPlayer } from '../../type';
-import { TICTACTOE_CONFIG, GOMOKU_CONFIG } from '../../constant';
+import { GameConfig } from '../../type';
+import { TICTACTOE_CONFIG } from '../../constant';
 
 interface configState {
     config: GameConfig;
@@ -14,29 +14,20 @@ export const recordSlice = createSlice({
     name: 'configer',
     initialState,
     reducers: {
-        changeToGomoku: (state) => {
-            state.config = GOMOKU_CONFIG;
+        changeGameConfig: (state, action) => {
+            state.config = action.payload;
         },
-        changeToTicTacToe: (state) => {
-            state.config = TICTACTOE_CONFIG;
+        changeGameMode: (state, action) => {
+            state.config.gameMode = action.payload;
         },
-        changeGameModeToPVP: (state) => {
-            state.config.gameMode = GameMode.PVP;
-        },
-        changeGameModeToPVE: (state) => {
-            state.config.gameMode = GameMode.PVE;
-        },
-        changeFirstPlayerToPlayer: (state) => {
-            state.config.firstPlayer = FirstPlayer.PLAYER;
-        },
-        changeFirstPlayerToAI: (state) => {
-            state.config.firstPlayer = FirstPlayer.AI;
+        changeFirst: (state, action) => {
+            state.config.firstPlayer = action.payload;
         },
     },
 });
 
 // 导出自动生成的 action 生成函数
-export const { changeToGomoku, changeToTicTacToe, changeGameModeToPVP, changeGameModeToPVE, changeFirstPlayerToPlayer, changeFirstPlayerToAI } = recordSlice.actions;
+export const { changeGameConfig, changeGameMode, changeFirst } = recordSlice.actions;
 
 // 选择器等其他代码可以使用导入的 `RootState` 类型
 /**

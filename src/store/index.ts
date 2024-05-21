@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import recorder from './slices/recordSlice.ts';
 import configer from './slices/gameConfigSlice.ts';
 
-const store = configureStore({ reducer: { recorder, configer } });
+const store = configureStore({ reducer: { configer, recorder  } });
 
 export default store;
 

@@ -1,0 +1,25 @@
+.game-button-container {
+    width: 100%;
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+}
+
+.game-button {
+    width: 100px;
+    height: 40px;
+    background-color: #f0f0f0;
+    border: 1px solid #000;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.game-button-selected {
+    background-color: #000;
+    color: #fff;
+}

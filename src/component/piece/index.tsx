@@ -1,15 +1,15 @@
 import { PureComponent } from 'react';
-import { AllGameChessmanType, GameName, GameChessman, GameConfig } from '../../type';
+import { GameChessman, GameConfig } from '../../type';
 import { connect } from 'react-redux';
 import { RootState } from '../../store';
 import './index.css';
 
 interface PieceProps {
-    chessman: AllGameChessmanType;
+    chessman: GameChessman;
     config: GameConfig;
     rowIndex: number;
     colIndex: number;
-    onClick: (location: [number, number], AIDrop: boolean) => void;
+    onClick: (location: [number, number]) => void;
 }
 
 /**
@@ -24,21 +24,17 @@ interface PieceProps {
 class Piece extends PureComponent<PieceProps> {
     render () {
         const { chessman, rowIndex, colIndex, onClick } = this.props;
-        const { name } = this.props.config;
+        const { chessmanStyle } = this.props.config;
         return (
             <div className='checkerboard-col'>
                 {
-                    name === GameName.TICTACTOE
-                        ? <div className='piece-container' onClick={() => onClick([rowIndex, colIndex], false)}>
-                            {chessman}
-                        </div>
-                        : <div className='piece-container' onClick={() => onClick([rowIndex, colIndex], false)}>
-                            {
-                                chessman === GameChessman.Empty
-                                    ? null
-                                    : <div className={chessman === GameChessman.X ? 'piece-black' : 'piece-white'}></div>
-                            }
-                        </div>
+                    <div className='piece-container' onClick={
+                        () => {
+                            onClick([rowIndex, colIndex]);
+                        }
+                    }>
+                        <div className={chessmanStyle[chessman].chessmanClass}></div>
+                    </div>
                 }
             </div>
         );

@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch, bindActionCreators } from '@reduxjs/toolkit';
 import { addRecord, initialRecord } from '../../store/slices/recordSlice';
-import { GameName, GameChessman, GameConfig, FirstPlayer, GameMode } from '../../type';
+import { GameChessman, GameConfig, FirstPlayer, GameMode } from '../../type';
 import { judge, findBestLocation } from '../../tool';
 import { RootState } from '../../store';
 import { ConnectedPiece, ConnectedRecord, ConnectedGameModeChoose } from '../index';
@@ -32,29 +32,32 @@ interface CheckerboardState {
 class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     constructor (props: CheckerboardProps) {
         super(props);
-        const { size } = props.config;
-        const newCheckerboard = new Array(size).fill(null)
-            .map(() => new Array(size).fill(GameChessman.Empty));
+        const { checkerboard } = props.config;
         this.state = {
-            checkerboard: newCheckerboard,
+            checkerboard,
             player: GameChessman.X,
             winner: GameChessman.Empty,
             recordIndex: 0,
         };
-        this.props.initialRecord({ checkerboard: newCheckerboard });
+        this.props.initialRecord({ checkerboard });
     }
 
     /**
      * @param prevProps 更新之前的 props
      */
     componentDidUpdate (prevProps: Readonly<CheckerboardProps>): void {
+        const prevName = prevProps.config.name;
+        const prevFirstPlayer = prevProps.config.firstPlayer;
+        const { name, firstPlayer } = this.props.config;
+        const { checkerboard } = this.state;
         // 切换游戏模式重置棋盘状态
-        if (prevProps.config.name !== this.props.config.name) {
+        if (prevName !== name) {
             this.clearCheckerboard();
         }
-        if (prevProps.config.firstPlayer !== this.props.config.firstPlayer) {
-            if (this.props.config.firstPlayer === FirstPlayer.AI) {
-                this.aiDropPiece(this.state.checkerboard as GameChessman[][]);
+        // 如果 AI 先手
+        if (prevFirstPlayer !== firstPlayer) {
+            if (firstPlayer === FirstPlayer.AI) {
+                this.aiDropPiece(checkerboard as GameChessman[][]);
             }
         }
     }
@@ -63,18 +66,16 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
      * @description 重置棋盘状态
      */
     clearCheckerboard = () => {
-        const { size } = this.props.config;
-        const newCheckerboard = new Array(size).fill(null)
-            .map(() => new Array(size).fill(GameChessman.Empty));
+        const { checkerboard } = this.props.config;
         const initialState = {
-            checkerboard: newCheckerboard,
+            checkerboard,
             player: GameChessman.X,
             winner: GameChessman.Empty,
             recordIndex: 0,
             noOneWin: false,
         };
         this.setState(initialState);
-        this.props.initialRecord({ checkerboard: newCheckerboard });
+        this.props.initialRecord({ checkerboard });
     }
 
     /**
@@ -156,9 +157,6 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         const { config } = this.props;
         const { player } = this.state;
         const location = findBestLocation(newCheckerboard, player, config);
-        if (location[0] === -1 && location[1] === -1) {
-            return;
-        }
         this.dropPiece(location);
     }
 
@@ -177,7 +175,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
     }
 
     render () {
-        const { size, name, firstPlayer, gameMode } = this.props.config;
+        const { size, firstPlayer, gameMode, win } = this.props.config;
         const { checkerboard, player, winner } = this.state;
 
         return (
@@ -187,14 +185,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
                 <div className='checkerboard-container'>
                     <div className='checkerboard-chess-container'>
                         <div className='checkerboard-chess-info'>
-                            {name !== GameName.GOMOKU && <span>
-                        Winner: {winner}
-                            </span>}
-                            {name === GameName.GOMOKU && <span>
-                        Winner: {
-                                    winner === GameChessman.X ? 'Black' : <>{winner === GameChessman.O ? 'White' : winner}</>
-                                }
-                            </span>}
+                        Winner: {win[winner]}
                             <span>{player} Please</span>
                         </div>
                         {checkerboard &&

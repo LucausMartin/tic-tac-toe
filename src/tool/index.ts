@@ -94,6 +94,21 @@ const score = (checkerboardArr: GameChessman[][], winLength: number, location: [
     return 1;
 };
 
+/**
+ * @description 找到所有空位置
+ */
+const findAllEmptyLocation = (checkerboardArr: GameChessman[][]): [number, number][] => {
+    const emptyLocation: [number, number][] = [];
+    checkerboardArr.forEach((row, rowIndex) => {
+        row.forEach((col, colIndex) => {
+            if (col === GameChessman.Empty) {
+                emptyLocation.push([rowIndex, colIndex]);
+            }
+        });
+    });
+    return emptyLocation;
+};
+
 interface SuccessConfig {
     winLength: number;
     size: number;
@@ -147,7 +162,6 @@ const minimax = (successConfig: SuccessConfig, max: boolean, chessman: GameChess
     return bestScore;
 };
 
-
 /**
  *
  * @param checkerboardArr 当前棋盘的状态
@@ -162,32 +176,58 @@ export const findBestLocation = (checkerboardArr: GameChessman[][], chessman: Ga
     // 判断棋子是不是 X 决定是从 min 开始还是 max 开始
     let bestScore = chessman === GameChessman.X ? -Infinity : +Infinity;
     let bestLocation: [number, number] = [-1, -1];
-    for (let row = 0; row < newCheckerboard.length; row++) {
-        for (let col = 0; col < newCheckerboard[row].length; col++) {
-            if (newCheckerboard[row][col] === GameChessman.Empty) {
-                newCheckerboard[row][col] = chessman;
-                // 用于判断胜利的配置
-                const successConfig: SuccessConfig = {
-                    winLength,
-                    size,
-                    location: [row, col],
-                    checkerboardArr: newCheckerboard,
-                };
-                const score = minimax(successConfig, !(chessman === GameChessman.X), chessman === GameChessman.X ? GameChessman.O : GameChessman.X, -Infinity, +Infinity);
-                newCheckerboard[row][col] = GameChessman.Empty;
-                if (chessman === GameChessman.X) {
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestLocation = [row, col];
-                    }
-                } else {
-                    if (score < bestScore) {
-                        bestScore = score;
-                        bestLocation = [row, col];
-                    }
-                }
+    // 找到所有空位置
+    const emptyLocation = findAllEmptyLocation(newCheckerboard);
+    // 遍历所有空位置
+    emptyLocation.forEach((location) => {
+        newCheckerboard[location[0]][location[1]] = chessman;
+        const successConfig: SuccessConfig = {
+            winLength,
+            size,
+            location,
+            checkerboardArr: newCheckerboard,
+        };
+        const score = minimax(successConfig, chessman === GameChessman.X, chessman === GameChessman.X ? GameChessman.O : GameChessman.X, -Infinity, +Infinity);
+        newCheckerboard[location[0]][location[1]] = GameChessman.Empty;
+        if (chessman === GameChessman.X) {
+            if (score > bestScore) {
+                bestScore = score;
+                bestLocation = location;
+            }
+        } else {
+            if (score < bestScore) {
+                bestScore = score;
+                bestLocation = location;
             }
         }
-    }
+    });
     return bestLocation;
+    // for (let row = 0; row < newCheckerboard.length; row++) {
+    //     for (let col = 0; col < newCheckerboard[row].length; col++) {
+    //         if (newCheckerboard[row][col] === GameChessman.Empty) {
+    //             newCheckerboard[row][col] = chessman;
+    //             // 用于判断胜利的配置
+    //             const successConfig: SuccessConfig = {
+    //                 winLength,
+    //                 size,
+    //                 location: [row, col],
+    //                 checkerboardArr: newCheckerboard,
+    //             };
+    //             const score = minimax(successConfig, !(chessman === GameChessman.X), chessman === GameChessman.X ? GameChessman.O : GameChessman.X, -Infinity, +Infinity);
+    //             newCheckerboard[row][col] = GameChessman.Empty;
+    //             if (chessman === GameChessman.X) {
+    //                 if (score > bestScore) {
+    //                     bestScore = score;
+    //                     bestLocation = [row, col];
+    //                 }
+    //             } else {
+    //                 if (score < bestScore) {
+    //                     bestScore = score;
+    //                     bestLocation = [row, col];
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // return bestLocation;
 };
