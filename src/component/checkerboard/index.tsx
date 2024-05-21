@@ -154,9 +154,9 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
      * @description AI 落子
      */
     aiDropPiece = (newCheckerboard: GameChessman[][]) => {
-        const { config } = this.props;
+        const { size, winLength } = this.props.config;
         const { player } = this.state;
-        const location = findBestLocation(newCheckerboard, player, config);
+        const location = findBestLocation(newCheckerboard, player, size, winLength);
         this.dropPiece(location);
     }
 
@@ -185,7 +185,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
                 <div className='checkerboard-container'>
                     <div className='checkerboard-chess-container'>
                         <div className='checkerboard-chess-info'>
-                        Winner: {win[winner]}
+                            Winner: {win[winner]}
                             <span>{player} Please</span>
                         </div>
                         {checkerboard &&

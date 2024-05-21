@@ -32,7 +32,7 @@ class GameButton extends Component<GameButtonProps> {
                         <div
                             key={gameType}
                             className={name === GAME_CONFIG[gameType].name ? 'game-button game-button-selected' : 'game-button'}
-                            onClick={() => changeGameConfig(GAME_CONFIG[gameType])}
+                            onClick={name === GAME_CONFIG[gameType].name ? () => {} : () => changeGameConfig(GAME_CONFIG[gameType])}
                         >
                             {gameType}
                         </div>
