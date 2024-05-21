@@ -21,5 +21,5 @@ export const GOMOKU_CONFIG: GameConfig = {
     winLength: 5,
     chessmanType: ChessmanType.BW,
     gameMode: GameMode.PVP,
-    firstPlayer: FirstPlayer.PLAYER,
+    firstPlayer: FirstPlayer.NONE,
 };

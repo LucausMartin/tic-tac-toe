@@ -83,9 +83,8 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
      * @description 落子函数
      */
     dropPiece = (location: [number, number]) => {
-        const { checkerboard, player, winner } = this.state;
-        const { record } = this.props;
-        const { size, winLength } = this.props.config;
+        const { checkerboard, player, winner, recordIndex } = this.state;
+        const { winLength, size } = this.props.config;
 
         // 如果已经有胜者或者棋盘不存在不允许落子
         if (winner !== GameChessman.Empty || !checkerboard) return;
@@ -102,17 +101,14 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         let result: GameChessman | 'none' = GameChessman.Empty;
         const winnerTemp = judge(location, winLength, newCheckerboard);
         if (winnerTemp !== null) {
-            this.setState({ winner: winnerTemp });
             result = winnerTemp;
         } else {
-            if (record && record.length === size * size) {
-                this.setState({ winner: 'none' });
+            if (((recordIndex + 1) === size * size)) {
                 result = 'none';
             }
         }
 
         // 记录落子和胜利状态并更新记录索引
-        const { recordIndex } = this.state;
         this.props.addRecord({
             recordIndex,
             chessState: {
@@ -160,6 +156,9 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         const { config } = this.props;
         const { player } = this.state;
         const location = findBestLocation(newCheckerboard, player, config);
+        if (location[0] === -1 && location[1] === -1) {
+            return;
+        }
         this.dropPiece(location);
     }
 
