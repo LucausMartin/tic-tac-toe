@@ -54,7 +54,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         }
         if (prevProps.config.firstPlayer !== this.props.config.firstPlayer) {
             if (this.props.config.firstPlayer === FirstPlayer.AI) {
-                this.aiDropPiece(this.state.checkerboard as GameChessman[][], GameChessman.X);
+                this.aiDropPiece(this.state.checkerboard as GameChessman[][]);
             }
         }
     }
@@ -96,13 +96,10 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         const newCheckerboard = checkerboard.map((row, rowIndex) =>
             row.map((col, colIndex) =>
                 (rowIndex === location[0] && colIndex === location[1] ? player : col)));
-        this.setState({ checkerboard: newCheckerboard });
 
-        // 切换玩家
-        this.setState({ player: player === GameChessman.X ? GameChessman.O : GameChessman.X });
 
         // 判断胜者并记录胜利状态
-        let result: GameChessman | 'draw' = GameChessman.Empty;
+        let result: GameChessman | 'none' = GameChessman.Empty;
         const winnerTemp = judge(location, winLength, newCheckerboard);
         if (winnerTemp !== null) {
             this.setState({ winner: winnerTemp });
@@ -110,36 +107,46 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         } else {
             if (record && record.length === size * size) {
                 this.setState({ winner: 'none' });
-                result = 'draw';
+                result = 'none';
             }
         }
 
         // 记录落子和胜利状态并更新记录索引
         const { recordIndex } = this.state;
-        this.props.addRecord({
+        this.props.addRecord([{
             recordIndex,
             chessState: {
                 chessState: newCheckerboard,
                 player: player === GameChessman.X ? GameChessman.O : GameChessman.X,
                 result,
             },
+        }]);
+
+        this.setState({
+            checkerboard: newCheckerboard,
+            player: player === GameChessman.X ? GameChessman.O : GameChessman.X,
+            recordIndex: recordIndex + 1,
+            winner: result,
+        }, () => {
+            const { firstPlayer } = this.props.config;
+            const { player } = this.state;
+            if (firstPlayer === FirstPlayer.AI && player === GameChessman.X) {
+                this.aiDropPiece(newCheckerboard);
+            }
+            if (firstPlayer === FirstPlayer.PLAYER && player === GameChessman.O) {
+                this.aiDropPiece(newCheckerboard);
+            }
         });
-        this.setState({ recordIndex: recordIndex + 1 });
-        if (this.props.config.gameMode === GameMode.PVE) {
-            this.aiDropPiece(newCheckerboard, player === GameChessman.X ? GameChessman.O : GameChessman.X);
-        }
     };
 
     /**
      * @description AI 落子
      */
-    aiDropPiece = (newCheckerboard: GameChessman[][], player: GameChessman) => {
-        const location = findBestLocation(newCheckerboard, player, this.props.config.winLength, this.props.config.size);
-        const Checkerboard = newCheckerboard.map((row, rowIndex) =>
-            row.map((col, colIndex) =>
-                (rowIndex === location[0] && colIndex === location[1] ? player : col)));
-        this.setState({ checkerboard: Checkerboard });
-        this.setState({ player: player === GameChessman.X ? GameChessman.O : GameChessman.X });
+    aiDropPiece = (newCheckerboard: GameChessman[][]) => {
+        const { config } = this.props;
+        const { player } = this.state;
+        const location = findBestLocation(newCheckerboard, player, config);
+        this.dropPiece(location);
     }
 
     /**
@@ -148,19 +155,25 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
      */
     updateRecord = (recordIndex: number) => {
         const { record } = this.props;
-        this.setState({ recordIndex });
-        // 先重置棋盘胜利状态
-        this.setState({ winner: GameChessman.Empty });
 
         // 更新棋盘状态并根据记录更新胜利状态
         if (record && record[recordIndex].chessState) {
-            this.setState({ checkerboard: record[recordIndex].chessState });
-            this.setState({ player: record[recordIndex].player });
-            if (record[recordIndex].result === 'draw') {
-                this.setState({ winner: 'none' });
-            } else if (record[recordIndex].result !== 'draw' && record[recordIndex].result !== GameChessman.Empty) {
-                this.setState({ winner: record[recordIndex].result as GameChessman });
+            let result: GameChessman | 'none' = GameChessman.Empty;
+            if (record[recordIndex].result === 'none') {
+                result = 'none';
+            } else if (record[recordIndex].result !== 'none' && record[recordIndex].result !== GameChessman.Empty) {
+                result = record[recordIndex].result as GameChessman;
             }
+            this.setState({ checkerboard: record[recordIndex].chessState, player: record[recordIndex].player, winner: result, recordIndex }, () => {
+                const { firstPlayer } = this.props.config;
+                const { player } = this.state;
+                if (firstPlayer === FirstPlayer.AI && player === GameChessman.X) {
+                    this.aiDropPiece(record[recordIndex].chessState);
+                }
+                if (firstPlayer === FirstPlayer.PLAYER && player === GameChessman.O) {
+                    this.aiDropPiece(record[recordIndex].chessState);
+                }
+            });
         }
     }
 
