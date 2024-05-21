@@ -103,7 +103,7 @@ class Checkerboard extends Component<CheckerboardProps, CheckerboardState> {
         if (winnerTemp !== null) {
             result = winnerTemp;
         } else {
-            if (((recordIndex + 1) === size * size)) {
+            if ((recordIndex + 1) === size * size) {
                 result = 'none';
             }
         }

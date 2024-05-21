@@ -108,11 +108,9 @@ interface SuccessConfig {
  * @param chessman 当前落子的棋子
  * @returns 评分
  */
-const minimax = (successConfig: SuccessConfig, max: boolean, chessman: GameChessman): number => {
+const minimax = (successConfig: SuccessConfig, max: boolean, chessman: GameChessman, alpha: number, beta: number): number => {
     const { checkerboardArr, location, size, winLength } = successConfig;
-    // 深拷贝棋盘状态
     const newCheckerboard = checkerboardArr.map((row) => row.map((col) => col));
-    // 判断是否结束以及分数是多少
     const result = score(newCheckerboard, winLength, location);
     if (result !== 0) {
         return result;
@@ -128,12 +126,20 @@ const minimax = (successConfig: SuccessConfig, max: boolean, chessman: GameChess
                     location: [row, col],
                     checkerboardArr: newCheckerboard,
                 };
-                const score = minimax(newSuccessConfig, !max, chessman === GameChessman.X ? GameChessman.O : GameChessman.X);
+                const score = minimax(newSuccessConfig, !max, chessman === GameChessman.X ? GameChessman.O : GameChessman.X, alpha, beta);
                 newCheckerboard[row][col] = GameChessman.Empty;
                 if (max) {
                     bestScore = Math.max(score, bestScore);
+                    alpha = Math.max(alpha, bestScore);
+                    if (beta <= alpha) {
+                        break;
+                    }
                 } else {
                     bestScore = Math.min(score, bestScore);
+                    beta = Math.min(beta, bestScore);
+                    if (beta <= alpha) {
+                        break;
+                    }
                 }
             }
         }
@@ -167,7 +173,7 @@ export const findBestLocation = (checkerboardArr: GameChessman[][], chessman: Ga
                     location: [row, col],
                     checkerboardArr: newCheckerboard,
                 };
-                const score = minimax(successConfig, !(chessman === GameChessman.X), chessman === GameChessman.X ? GameChessman.O : GameChessman.X);
+                const score = minimax(successConfig, !(chessman === GameChessman.X), chessman === GameChessman.X ? GameChessman.O : GameChessman.X, -Infinity, +Infinity);
                 newCheckerboard[row][col] = GameChessman.Empty;
                 if (chessman === GameChessman.X) {
                     if (score > bestScore) {
